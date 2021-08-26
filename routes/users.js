@@ -21,7 +21,8 @@ router.post("/tab12", function (req, res, next) {
         isDeleted: 0,
         company: req.body.newProfile.company,
         occupation: req.body.newProfile.occupation,
-        associates: "",
+        associates: "0",
+        requests: "0",
       },
     })
     .spread(function (result, created) {
@@ -92,12 +93,22 @@ router.get("/tab13", function (req, res, next) {
 
 // Get another user profile
 router.get("/tab14/:id", function (req, res, next) {
+  models.person.findByPk(parseInt(req.params.id)).then((user) => {
+    res.json({ user });
+    console.log({ user });
+  });
+});
+
+router.put("/tab14/:id", function (req, res, next) {
   models.person
-    .findByPk(parseInt(req.params.id))
-    .then((user) => {
-      res.json({ user });
-      console.log({ user });
-    });
+    .update(
+      { requests: req.body.ListProfile.requests + ", " + req.body.Self.UserId },
+      { where: { UserId: req.params.id } }
+    )
+    .then((updatedRequests) => {
+      res.json(updatedRequests);
+    })
+    .catch((err) => res.json(err));
 });
 
 // Log Out

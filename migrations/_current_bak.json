@@ -51,10 +51,6 @@
                     "field": "associates",
                     "seqType": "Sequelize.STRING"
                 },
-                "requests": {
-                    "field": "requests",
-                    "seqType": "Sequelize.STRING"
-                },
                 "createdAt": {
                     "field": "createdAt",
                     "seqType": "Sequelize.DATE"
@@ -67,5 +63,5 @@
             "indexes": []
         }
     },
-    "revision": 2
+    "revision": 1
 }

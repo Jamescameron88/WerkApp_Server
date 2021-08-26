@@ -32,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       company: DataTypes.STRING,
       occupation: DataTypes.STRING,
       associates: DataTypes.STRING,
+      requests: DataTypes.STRING,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE
     },

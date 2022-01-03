@@ -8,6 +8,8 @@ var bodyParser = require('body-parser');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var associatesRouter = require('./routes/associates');
+
 
 var app = express();
 
@@ -31,6 +33,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/associates', associatesRouter);
+
 
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');

@@ -5,27 +5,9 @@ var authService = require("../services/auth");
 const { BOOLEAN } = require("sequelize");
 
 
-// router.post("/practice", async (req, res) => {
-
-//     // const { UserId, }
-//     console.log(UserId)
-//     return res.json( "Hello" );
-//     try {
-        
-//        // let associates = await models.Associates.findOrCreate({ where: })
-
-//     } catch (err) {
-        
-//     }
-
-// });
-
-
-
-
 
 //Send associate request
-router.post("/tab14/:id", function (req, res, next) {
+router.post("/AssociateProfile/:id", function (req, res, next) {
   console.log(typeof req.body.Self.UserId);
   models.Associates.findOrCreate({
     where: {
@@ -49,7 +31,7 @@ router.post("/tab14/:id", function (req, res, next) {
 });
 
 //Get list of my associate requests
-router.post("/tab7", function (req, res, next) {
+router.post("/Notifications", function (req, res, next) {
   models.Associates.findAll({
     where: {
       a_UserID: req.body.profile.UserId,

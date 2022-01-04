@@ -5,7 +5,7 @@ var authService = require("../services/auth");
 const { BOOLEAN } = require("sequelize");
 
 // create an account
-router.post("/tab12", function (req, res, next) {
+router.post("/CreateAccount", function (req, res, next) {
   models.person
     .findOrCreate({
       where: {
@@ -36,7 +36,7 @@ router.post("/tab12", function (req, res, next) {
 });
 
 // login
-router.post("/tab10", function (req, res, next) {
+router.post("/Login", function (req, res, next) {
   models.person
     .findOne({
       where: {
@@ -62,7 +62,7 @@ router.post("/tab10", function (req, res, next) {
 });
 
 // get profile page
-router.get("/tab5", function (req, res, next) {
+router.get("/Profile", function (req, res, next) {
   let token = req.cookies.jwt;
   if (token) {
     authService.verifyPerson(token).then((user) => {
@@ -85,21 +85,21 @@ router.get("/tab5", function (req, res, next) {
 });
 
 // Search Users
-router.get("/tab13", function (req, res, next) {
+router.get("/Search", function (req, res, next) {
   models.person.findAll().then((person) => {
     res.json({ person });
   });
 });
 
 // Get another user profile
-router.get("/tab14/:id", function (req, res, next) {
+router.get("/AssociateProfile/:id", function (req, res, next) {
   models.person.findByPk(parseInt(req.params.id)).then((user) => {
     res.json({ user });
     console.log({ user });
   });
 });
 
-router.put("/tab14/:id", function (req, res, next) {
+router.put("/AssociateProfile/:id", function (req, res, next) {
   models.person
     .update(
       { requests: req.body.ListProfile.requests + ", " + req.body.Self.UserId },
@@ -112,7 +112,7 @@ router.put("/tab14/:id", function (req, res, next) {
 });
 
 // Log Out
-router.get("/tab11", function (req, res, next) {
+router.get("/Logout", function (req, res, next) {
   res.cookie("jwt", "", { expires: new Date(0) });
   res.json("Logged Out!!!");
 });

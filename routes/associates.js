@@ -31,16 +31,29 @@ router.post("/AssociateProfile/:id", function (req, res, next) {
 });
 
 //Get list of my associate requests
-router.post("/Notifications", function (req, res, next) {
-  models.Associates.findAll({
+router.post("/Notifications", async (req, res, next) => {
+  try {
+    const happyResult =  await models.Associates.findAll({
     where: {
-      a_UserID: req.body.profile.UserId,
+      a_AssociateID: req.body.profile.UserId,
       RequestStatus: "new",
     },
-  }).then((myRequests) => {
-    res.json({ myRequests });
-    console.log(myRequests);
+    attributes: {
+      exclude: ['id', 'a_UserID', 'a_AssociateID', 'createdAt', 'updatedAt']
+    },
+    include: {
+      model: models.person,
+      attributes: ['UserId', 'FirstName', 'Email']
+    }
   });
+    res.json({ happyResult });
+    console.log(happyResult);
+  } catch (err) {
+  console.error(err.message);
+  res.status(500).send('Server Error');
+}
 });
+
+
 
 module.exports = router;

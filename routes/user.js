@@ -17,12 +17,12 @@ router.post("/CreateAccount", function (req, res, next) {
         Email: req.body.newProfile.Email,
         Username: req.body.Username,
         Password: req.body.newProfile.Password,
-        isScheduler: 0,
-        isDeleted: 0,
-        company: req.body.newProfile.company,
-        occupation: req.body.newProfile.occupation,
-        associates: "0",
-        requests: "0",
+        IsScheduler: 0,
+        IsDeleted: 0,
+        Company: req.body.newProfile.company,
+        Occupation: req.body.newProfile.occupation,
+        Associates: "0",
+        Requests: "0",
       },
     })
     .spread(function (result, created) {

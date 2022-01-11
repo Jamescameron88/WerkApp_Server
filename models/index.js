@@ -34,14 +34,14 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-db.person = require("./person")(sequelize, Sequelize);
-db.associates = require("./associates")(sequelize,Sequelize);
+db.user = require("./user")(sequelize, Sequelize);
+db.businessassociate = require("./businessassociate")(sequelize,Sequelize);
 
-db.associates.belongsTo(db.person, {
-  foreignKey: "a_UserID"
+db.businessassociate.belongsTo(db.user, {
+  foreignKey: "a_Users_UserId"
 });
-db.associates.belongsTo(db.person, {
-  foreignKey: "a_AssociateID"
+db.businessassociate.belongsTo(db.user, {
+  foreignKey: "b_Users_UserId"
 });
 
 module.exports = db;

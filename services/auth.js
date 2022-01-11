@@ -19,7 +19,7 @@ var authService = {
       
     try {
       let decoded = jwt.verify(token, 'secretkey'); 
-      return models.person.findByPk(decoded.UserId); 
+      return models.user.findByPk(decoded.UserId); 
     } catch (err) {
       console.log(err);
       return null;

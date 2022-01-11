@@ -6,7 +6,7 @@ const { BOOLEAN } = require("sequelize");
 
 // create an account
 router.post("/CreateAccount", function (req, res, next) {
-  models.person
+  models.user
     .findOrCreate({
       where: {
         Email: req.body.Email,
@@ -37,7 +37,7 @@ router.post("/CreateAccount", function (req, res, next) {
 
 // login
 router.post("/Login", function (req, res, next) {
-  models.person
+  models.user
     .findOne({
       where: {
         Email: req.body.logProfile.Email,
@@ -67,7 +67,7 @@ router.get("/Profile", function (req, res, next) {
   if (token) {
     authService.verifyPerson(token).then((user) => {
       if (user) {
-        models.person
+        models.user
           .findOne({
             where: {
               UserId: user.UserId,
@@ -86,21 +86,21 @@ router.get("/Profile", function (req, res, next) {
 
 // Search Users
 router.get("/Search", function (req, res, next) {
-  models.person.findAll().then((person) => {
+  models.user.findAll().then((person) => {
     res.json({ person });
   });
 });
 
 // Get another user profile
 router.get("/AssociateProfile/:id", function (req, res, next) {
-  models.person.findByPk(parseInt(req.params.id)).then((user) => {
+  models.user.findByPk(parseInt(req.params.id)).then((user) => {
     res.json({ user });
     console.log({ user });
   });
 });
 
 router.put("/AssociateProfile/:id", function (req, res, next) {
-  models.person
+  models.user
     .update(
       { requests: req.body.ListProfile.requests + ", " + req.body.Self.UserId },
       { where: { UserId: req.params.id } }

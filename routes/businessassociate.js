@@ -6,17 +6,18 @@ const { BOOLEAN } = require("sequelize");
 
 
 
+
 //Send associate request
 router.post("/AssociateProfile/:id", function (req, res, next) {
   console.log(typeof req.body.Self.UserId);
-  models.Associates.findOrCreate({
+  models.businessassociate.findOrCreate({
     where: {
-      a_UserID: req.body.Self.UserId,
-      a_AssociateID: req.body.ListProfile.UserId,
+      a_Users_UserId: req.body.Self.UserId,
+      b_Users_UserId: req.body.ListProfile.UserId,
     },
     defaults: {
-      a_UserID: req.body.Self.UserId,
-      a_AssociateID: req.body.ListProfile.UserId,
+      a_Users_UserId: req.body.Self.UserId,
+      b_Users_UserId: req.body.ListProfile.UserId,
       RequestStatus: "new",
     },
   }).spread(function (result, created) {
@@ -33,16 +34,16 @@ router.post("/AssociateProfile/:id", function (req, res, next) {
 //Get list of my associate requests
 router.post("/Notifications", async (req, res, next) => {
   try {
-    const happyResult =  await models.Associates.findAll({
+    const happyResult =  await models.businessassociate.findAll({
     where: {
-      a_AssociateID: req.body.profile.UserId,
+      b_Users_UserId: req.body.profile.UserId,
       RequestStatus: "new",
     },
     attributes: {
-      exclude: ['id', 'a_UserID', 'a_AssociateID', 'createdAt', 'updatedAt']
+      exclude: ['id', 'createdAt', 'updatedAt']
     },
     include: {
-      model: models.person,
+      model: models.user,
       attributes: ['UserId', 'FirstName', 'Email']
     }
   });
@@ -53,6 +54,7 @@ router.post("/Notifications", async (req, res, next) => {
   res.status(500).send('Server Error');
 }
 });
+
 
 
 

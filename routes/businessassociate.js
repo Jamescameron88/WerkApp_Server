@@ -8,17 +8,55 @@ const user = require("../models/user");
 
 
 // @route   POST
-// @descr   Get list of users associate requests
-// @access  PRIVATE
-router.post("/Notifications", async (req, res) => {
+// @descr   Send Add Associate requests
+// @access  PRIVATE (TODO)
+router.post("/AssociateProfile/:id", async (req, res) => {
+  try {
+    // Check if association already exists
+    let associates1 = await models.businessassociate.findAll({
+      where: {
+        a_Users_UserId: req.body.Self.UserId,
+        b_Users_UserId: req.body.ListProfile.UserId
+      }
+    });
+    if (associates1.length === 0 ) {
+      let requestSent = await models.businessassociate.findOrCreate({
+        where: {
+          a_Users_UserId: req.body.Self.UserId,
+          b_Users_UserId: req.body.ListProfile.UserId,
+          RequestStatus: "RequestSent"
+        }
+      });
+      let requestReceived = await models.businessassociate.findOrCreate({
+        where: {
+          b_Users_UserId: req.body.Self.UserId,
+          a_Users_UserId: req.body.ListProfile.UserId,
+          RequestStatus: "RequestReceived"
+        }
+      });
+      res.json(associates1);
+    } else {
+      res.json('Request already in process');
+    };
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// @route   POST
+// @descr   Get list of associate requests RECEIVED
+// @access  PRIVATE (TODO)
+router.post("/Notifications/RequestsReceived", async (req, res) => {
   try {
     const happyResult =  await models.businessassociate.findAll({
     where: {
-      b_Users_UserId: req.body.profile.UserId,
-      RequestStatus: "new",
+      a_Users_UserId: req.body.profile.UserId,
+      RequestStatus: "RequestReceived",
     },
     attributes: {
-      exclude: ['BusinessAssociateId', 'b_Users_UserId', 'RequestStatus', 'createdAt', 'updatedAt']
+      exclude: ['BusinessAssociateId', 'RequestStatus', 'createdAt', 'updatedAt']
     }
   });
     
@@ -28,7 +66,7 @@ router.post("/Notifications", async (req, res) => {
   for (let i = 0; i < happyResult.length; i++) {
     finalResult = await models.user.findAll({
       where: {
-        UserId: happyResult[i].a_Users_UserId
+        UserId: happyResult[i].b_Users_UserId
       },
       attributes: {
         exclude: ['Email', 'Username', 'Password', 'IsScheduler', 'IsDeleted', 'createdAt', 'updatedAt']
@@ -54,109 +92,101 @@ router.post("/Notifications", async (req, res) => {
 });
 
 
-//Send associate request
-router.post("/AssociateProfile/:id", function (req, res, next) {
-  console.log(typeof req.body.Self.UserId);
-  models.businessassociate.findOrCreate({
+// @route   POST
+// @descr   Get list of associate requests SENT
+// @access  PRIVATE (TODO)
+router.post("/Notifications/RequestsSent", async (req, res) => {
+  try {
+    const happyResult =  await models.businessassociate.findAll({
     where: {
-      a_Users_UserId: req.body.Self.UserId,
-      b_Users_UserId: req.body.ListProfile.UserId,
+      a_Users_UserId: req.body.profile.UserId,
+      RequestStatus: "RequestSent",
     },
-    defaults: {
-      a_Users_UserId: req.body.Self.UserId,
-      b_Users_UserId: req.body.ListProfile.UserId,
-      RequestStatus: "new",
-    },
-  }).spread(function (result, created) {
-    if (created) {
-      res.json("Sent Request");
-      console.log("Sent Request");
-    } else {
-      res.json({ message: "You Are Already An Associate" });
+    attributes: {
+      exclude: ['BusinessAssociateId', 'RequestStatus', 'createdAt', 'updatedAt']
     }
   });
+    
+  var finalResult = {};
+  var finalResultArray = [];
+  
+  for (let i = 0; i < happyResult.length; i++) {
+    finalResult = await models.user.findAll({
+      where: {
+        UserId: happyResult[i].b_Users_UserId
+      },
+      attributes: {
+        exclude: ['Email', 'Username', 'Password', 'IsScheduler', 'IsDeleted', 'createdAt', 'updatedAt']
+      }
+    });
+    finalResultArray.push({...finalResult});
+  }
+
+    var str = JSON.stringify(finalResultArray);
+    str = str.replace(/{"0":/g,'');
+    str = str.replace(/}}]/g,'}]');
+    str = str.replace(/}}/g,'}');
+    console.log(str);
+    console.log(JSON.parse(str));
+
+    const happyResult2 = JSON.parse(str);
+
+    res.json({ happyResult2 });
+  } catch (err) {
+  console.error(err.message);
+  res.status(500).send('Server Error');
+}
 });
 
 
-// router.post("/AssociateProfile/:id", async (req, res) => {
-  
-//   try {
-//     // Check if association already exists
-//     let associates1 = await models.businessassociate.findAll({
-//       where: {
-//         a_Users_UserId: req.body.Self.UserId
-//       }
-//     });
-//     if (associates1.length === 0 ) {
-//       let requestSent = await models.businessassociate.findOrCreate({
-//         where: {
-//           a_Users_UserId: req.body.Self.UserId,
-//           b_Users_UserId: req.body.ListProfile.UserId,
-//           RequestStatus: "RequestSent"
-//         }
-//       });
-//       let requestReceived = await models.businessassociate.findOrCreate({
-//         where: {
-//           b_Users_UserId: req.body.Self.UserId,
-//           a_Users_UserId: req.body.ListProfile.UserId,
-//           RequestStatus: "RequestReceived"
-//         }
-//       });
-//       console.log('associates 1 is empty')
-//     } else {
-//       res.json('Request already in process');
-//     };
-//     res.json(associates1);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send('Server Error');
-//   }
-// });
+// @route   PUT
+// @descr   Update associate request (accept/decline)
+// @access  PRIVATE (TODO)
+router.put("/UpdateRequest", async (req, res) => {
+  try {
+    // find the user who had received the request
+    // change their status to RequestAccepted
+    const userAccepted = await models.businessassociate.update(
+     { RequestStatus: req.body.requestResponse.RequestStatus },
+     { where: { 
+       a_Users_UserId: req.body.Self.UserId,
+       b_Users_UserId: req.body.ListProfile.UserId 
+    }  
+  });
+    // find the user who had sent the request
+    // change their status to RequestAccepted
+    const userAccepted2 = await models.businessassociate.update(
+      { RequestStatus: req.body.requestResponse.RequestStatus },
+      { where: { 
+        a_Users_UserId: req.body.ListProfile.UserId,
+        b_Users_UserId: req.body.Self.UserId
+      }
+    });
+    res.json('Request updated');
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 
-
-
-
-// ************************ PRACTICE ************************ 
-// Send associate request
-// router.post("/AssociateProfile2/:id", async (req, res) => {
-  
-//   try {
-//     // Check if association already exists
-//     let associates1 = await models.businessassociate.findAll({
-//       where: {
-//         a_Users_UserId: req.body.UserId
-//       }
-//     });
-//     if (associates1.length === 0 ) {
-//       let requestSent = await models.businessassociate.findOrCreate({
-//         where: {
-//           a_Users_UserId: req.body.a_UserId,
-//           b_Users_UserId: req.body.b_UserId,
-//           RequestStatus: "RequestSent"
-//         }
-//       });
-//       let requestReceived = await models.businessassociate.findOrCreate({
-//         where: {
-//           b_Users_UserId: req.body.a_UserId,
-//           a_Users_UserId: req.body.b_UserId,
-//           RequestStatus: "RequestReceived"
-//         }
-//       });
-//       console.log('associates 1 is empty')
-//     } else {
-//       res.json('Request already in process');
-//     };
-//     res.json(associates1);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send('Server Error');
-//   }
-// });
-
-
-
-
+// @route   GET
+// @descr   Get list of a user's requests
+// @access  PRIVATE (TODO)
+router.get("/ListOfAssociates/:id", async (req, res) => {
+try {
+  const listOfAssociates = await models.businessassociate.findAll(
+    {where: {
+      a_Users_UserId: req.params.id,
+      RequestStatus: "RequestAccepted"
+    }}
+  )
+  res.json(listOfAssociates);
+} catch (err) {
+  console.error(err.message);
+  res.status(500).send('Server Error');
+}
+});
 
 
 module.exports = router;

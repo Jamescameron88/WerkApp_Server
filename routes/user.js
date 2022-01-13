@@ -19,10 +19,8 @@ router.post("/CreateAccount", function (req, res, next) {
         Password: req.body.newProfile.Password,
         IsScheduler: 0,
         IsDeleted: 0,
-        Company: req.body.newProfile.company,
-        Occupation: req.body.newProfile.occupation,
-        Associates: "0",
-        Requests: "0",
+        Company: req.body.newProfile.Company,
+        Occupation: req.body.newProfile.Occupation,
       },
     })
     .spread(function (result, created) {
@@ -116,5 +114,42 @@ router.get("/Logout", function (req, res, next) {
   res.cookie("jwt", "", { expires: new Date(0) });
   res.json("Logged Out!!!");
 });
+
+
+
+// ================== PRACTICE ================== 
+
+
+
+
+// // Search Users, but exclude current user
+router.get("/Search/:id", async (req, res) => {
+  try {
+    const personArray = await models.user.findAll();
+    console.log(JSON.stringify(personArray));
+
+    // finds the index of the UserId in the personArray
+    var indexPosition = personArray.findIndex(function(item, i){
+      return item.UserId === req.params.id // need to replace the 4 with the req.params
+    });
+
+    personArray.splice(indexPosition, 1);
+
+    console.log(JSON.stringify(personArray));
+
+    res.json(personArray);
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+
+
+
+
 
 module.exports = router;

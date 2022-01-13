@@ -179,9 +179,36 @@ try {
     {where: {
       a_Users_UserId: req.params.id,
       RequestStatus: "RequestAccepted"
-    }}
-  )
-  res.json(listOfAssociates);
+    },
+    attributes: {
+      exclude: ['BusinessAssociateId', 'RequestStatus', 'createdAt', 'updatedAt']
+    }
+    });
+
+    var listOfAssociatesObj = {};
+    var listOfAssociatesArray = [];
+
+    for (let i = 0; i < listOfAssociates.length; i++) {
+      listOfAssociatesObj = await models.user.findAll({
+        where: {
+          UserId: listOfAssociates[i].b_Users_UserId
+        },
+        attributes: {
+          exclude: ['Email', 'Username', 'Password', 'IsScheduler', 'IsDeleted', 'createdAt', 'updatedAt']
+        }
+      });
+      listOfAssociatesArray.push({...listOfAssociatesObj});
+    }
+
+
+    var str = JSON.stringify(listOfAssociatesArray);
+    str = str.replace(/{"0":/g,'');
+    str = str.replace(/}}]/g,'}]');
+    str = str.replace(/}}/g,'}');
+
+    const listOfAssociates2 = JSON.parse(str);
+
+    res.json(listOfAssociates2);
 } catch (err) {
   console.error(err.message);
   res.status(500).send('Server Error');

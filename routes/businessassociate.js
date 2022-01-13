@@ -208,7 +208,7 @@ try {
 
     const listOfAssociates2 = JSON.parse(str);
 
-    res.json(listOfAssociates2);
+    res.json({listOfAssociates2});
 } catch (err) {
   console.error(err.message);
   res.status(500).send('Server Error');

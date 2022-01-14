@@ -4,12 +4,15 @@ var models = require("../models");
 var authService = require("../services/auth");
 const { BOOLEAN } = require("sequelize");
 
-// create an account
-router.post("/CreateAccount", function (req, res, next) {
-  models.user
-    .findOrCreate({
+
+// @route   POST
+// @descr   Create a user account
+// @access  PUBLIC
+router.post("/CreateAccount", async (req, res) => {  
+  try {
+    const [userData, created] = await models.user.findOrCreate({
       where: {
-        Email: req.body.Email,
+        Email: req.body.newProfile.Email,
       },
       defaults: {
         FirstName: req.body.newProfile.FirstName,
@@ -21,105 +24,130 @@ router.post("/CreateAccount", function (req, res, next) {
         IsDeleted: 0,
         Company: req.body.newProfile.Company,
         Occupation: req.body.newProfile.Occupation,
-      },
-    })
-    .spread(function (result, created) {
-      if (created) {
-        res.json("Created Profile!");
-        console.log("Created Profile!");
-      } else {
-        res.json({ message: "This Account Already Exists" });
       }
     });
-});
-
-// login
-router.post("/Login", function (req, res, next) {
-  models.user
-    .findOne({
-      where: {
-        Email: req.body.logProfile.Email,
-        Password: req.body.logProfile.Password,
-      },
-    })
-    .then((user) => {
-      if (!user) {
-        console.log("Person not found");
-        return res.status(401).json({
-          message: "Login Failed",
-        });
-      }
-      if (user) {
-        let token = authService.signPerson(user);
-        res.cookie("jwt", token);
-        res.json(token);
-      } else {
-        console.log("Wrong password");
-      }
-    });
-});
-
-// get profile page
-router.get("/Profile", function (req, res, next) {
-  let token = req.cookies.jwt;
-  if (token) {
-    authService.verifyPerson(token).then((user) => {
-      if (user) {
-        models.user
-          .findOne({
-            where: {
-              UserId: user.UserId,
-            },
-          })
-          .then((personDataFound) => {
-            res.json({ personDataFound });
-          });
-      } else {
-        res.status(401);
-        res.json("Must be logged in");
-      }
-    });
+    if (created) {
+      res.json({ message: "Created Profile!" });
+      console.log("Created Profile");
+    } else {
+      res.json({ message: "This Account Already Exists" });
+    }
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');    
   }
 });
 
-// Search Users
-router.get("/Search", function (req, res, next) {
-  models.user.findAll().then((person) => {
-    res.json({ person });
-  });
-});
 
-// Get another user profile
-router.get("/AssociateProfile/:id", function (req, res, next) {
-  models.user.findByPk(parseInt(req.params.id)).then((user) => {
-    res.json({ user });
-    console.log({ user });
-  });
-});
-
-router.put("/AssociateProfile/:id", function (req, res, next) {
-  models.user
-    .update(
-      { requests: req.body.ListProfile.requests + ", " + req.body.Self.UserId },
-      { where: { UserId: req.params.id } }
-    )
-    .then((updatedRequests) => {
-      res.json(updatedRequests);
+// @route   POST
+// @descr   Login to a user account
+// @access  PUBLIC
+router.post("/Login", async (req, res) => {
+  try {
+    const loginUser = await models.user.findOne({
+      where: {
+        Email: req.body.logProfile.Email,
+      }
     })
-    .catch((err) => res.json(err));
+    if (!loginUser) {
+      console.log('Person not found')
+      res.status(401).json({ message: "Login Failed"})
+    } else {
+      const authUser = await models.user.findOne({
+        where: { 
+          Email: req.body.logProfile.Email,
+          Password: req.body.logProfile.Password
+        }
+      })
+      if (authUser) {
+        let token = authService.signPerson(authUser);
+        res.cookie("jwt", token);
+        res.json(token);
+      } else {
+        console.log("Wrong Password");
+      }
+    }
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 });
 
-// Log Out
+
+// @route   GET
+// @descr   Get the Profile data
+// @access  PRIVATE (TODO)
+router.get("/Profile", async (req, res) => {
+try {
+  let token = req.cookies.jwt;
+  if (token) {
+    const authUser = await authService.verifyPerson(token); 
+      if (authUser) {
+        const personDataFound = await models.user.findOne({
+            where: {
+              UserId: authUser.UserId,
+            }
+          })
+          if (personDataFound) {
+            res.json({ personDataFound})
+          } else {
+            res.status(401);
+            res.json("Must be logged in");
+          }
+        }
+      }
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error')
+  }
+});
+
+
+// @route   GET
+// @descr   Get a list of all the users
+// @access  PRIVATE (TODO)
+router.get("/Search", async (req, res) => {
+  try {
+    const peopleProfileData = await models.user.findAll();
+    console.log(peopleProfileData);
+    res.json({ peopleProfileData });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error')
+  }
+});
+
+
+// @route   GET
+// @descr   Get another user's profile
+// @access  PRIVATE (TODO)
+router.get("/AssociateProfile/:id", async (req, res) => {
+try {
+  const user = await models.user.findByPk(parseInt(req.params.id));
+  res.json({ user });
+  console.log(user);
+} catch (err) {
+  console.error(err.message);
+  res.status(500).send('Server Error');
+}
+});
+
+
+// @route   GET
+// @descr   Log out auth user
+// @access  PRIVATE (TODO)
 router.get("/Logout", function (req, res, next) {
-  res.cookie("jwt", "", { expires: new Date(0) });
+  try {
+    res.cookie("jwt", "", { expires: new Date(0) });
   res.json("Logged Out!!!");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 });
-
 
 
 // ================== PRACTICE ================== 
-
-
 
 
 // // Search Users, but exclude current user
@@ -144,12 +172,5 @@ router.get("/Search/:id", async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
-
-
-
-
-
-
 
 module.exports = router;

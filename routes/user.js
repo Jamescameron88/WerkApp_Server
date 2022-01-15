@@ -3,6 +3,7 @@ var router = express.Router();
 var models = require("../models");
 var authService = require("../services/auth");
 const { BOOLEAN } = require("sequelize");
+const { sequelize } = require("../models");
 
 
 // @route   POST
@@ -76,7 +77,7 @@ router.post("/Login", async (req, res) => {
 
 // @route   GET
 // @descr   Get the Profile data
-// @access  PRIVATE (TODO)
+// @access  PRIVATE
 router.get("/Profile", async (req, res) => {
 try {
   let token = req.cookies.jwt;
@@ -84,18 +85,16 @@ try {
     const authUser = await authService.verifyPerson(token); 
       if (authUser) {
         const personDataFound = await models.user.findOne({
-            where: {
-              UserId: authUser.UserId,
-            }
-          })
-          if (personDataFound) {
-            res.json({ personDataFound})
-          } else {
-            res.status(401);
-            res.json("Must be logged in");
+          where: {
+            UserId: authUser.UserId,
           }
-        }
-      }
+          })
+          res.json({ personDataFound})
+      } else {
+        res.status(401);
+        res.json("Must be logged in");
+      } 
+    }
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error')
@@ -104,38 +103,58 @@ try {
 
 
 // @route   GET
-// @descr   Get a list of all the users
+// @descr   Get a list of users except for current user
 // @access  PRIVATE (TODO)
-router.get("/Search", async (req, res) => {
+router.get("/Search/:id", async (req, res) => {
   try {
-    const peopleProfileData = await models.user.findAll();
-    console.log(peopleProfileData);
-    res.json({ peopleProfileData });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error')
-  }
-});
+    let token = req.cookies.jwt;
+    if (token) {
+      const authUser = await authService.verifyPerson(token); 
+      if (authUser) {
+          const personArray = await models.user.findAll({
+            where: {
+              UserId: { [sequelize.Op.not]: req.params.id }
+            }
+          });
+          res.json({ personArray });
+        } else {
+          res.status(401);
+          res.json("Must be logged in");
+        }
+    }
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error')
+    }
+  });
 
 
 // @route   GET
 // @descr   Get another user's profile
 // @access  PRIVATE (TODO)
 router.get("/AssociateProfile/:id", async (req, res) => {
-try {
-  const user = await models.user.findByPk(parseInt(req.params.id));
-  res.json({ user });
-  console.log(user);
-} catch (err) {
-  console.error(err.message);
-  res.status(500).send('Server Error');
-}
-});
+  try {
+    let token = req.cookies.jwt;
+    if (token) {
+      const authUser = await authService.verifyPerson(token); 
+      if (authUser) {
+        const user = await models.user.findByPk(parseInt(req.params.id));
+        res.json({ user });
+        } else {
+          res.status(401);
+          res.json("Must be logged in");
+        }
+    }
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error')
+    }
+  });
 
 
 // @route   GET
 // @descr   Log out auth user
-// @access  PRIVATE (TODO)
+// @access  PUBLIC
 router.get("/Logout", function (req, res, next) {
   try {
     res.cookie("jwt", "", { expires: new Date(0) });
@@ -146,31 +165,5 @@ router.get("/Logout", function (req, res, next) {
   }
 });
 
-
-// ================== PRACTICE ================== 
-
-
-// // Search Users, but exclude current user
-router.get("/Search/:id", async (req, res) => {
-  try {
-    const personArray = await models.user.findAll();
-    console.log(JSON.stringify(personArray));
-
-    // finds the index of the UserId in the personArray
-    var indexPosition = personArray.findIndex(function(item, i){
-      return item.UserId === req.params.id // need to replace the 4 with the req.params
-    });
-
-    personArray.splice(indexPosition, 1);
-
-    console.log(JSON.stringify(personArray));
-
-    res.json(personArray);
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
 
 module.exports = router;

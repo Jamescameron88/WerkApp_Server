@@ -2,7 +2,8 @@ var express = require("express");
 var router = express.Router();
 var models = require("../models");
 var authService = require("../services/auth");
-const { BOOLEAN } = require("sequelize");
+// const { BOOLEAN } = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../models");
 
 
@@ -25,6 +26,7 @@ router.post("/CreateAccount", async (req, res) => {
         IsDeleted: 0,
         Company: req.body.newProfile.Company,
         Occupation: req.body.newProfile.Occupation,
+        ProfilePicURL: "../assets/profilePic.png"
       }
     });
     if (created) {
@@ -55,10 +57,10 @@ router.post("/Login", async (req, res) => {
       res.status(401).json({ message: "Login Failed"})
     } else {
       const authUser = await models.user.findOne({
-        where: { 
-          Email: req.body.logProfile.Email,
-          Password: req.body.logProfile.Password
-        }
+        where: { [Op.and]: [
+          { Email: req.body.logProfile.Email },
+          { Password: req.body.logProfile.Password }
+        ]}
       })
       if (authUser) {
         let token = authService.signPerson(authUser);
@@ -82,6 +84,7 @@ router.get("/Profile", async (req, res) => {
 try {
   let token = req.cookies.jwt;
   if (token) {
+    console.log("made it here");
     const authUser = await authService.verifyPerson(token); 
       if (authUser) {
         const personDataFound = await models.user.findOne({
@@ -104,7 +107,7 @@ try {
 
 // @route   GET
 // @descr   Get a list of users except for current user
-// @access  PRIVATE (TODO)
+// @access  PRIVATE
 router.get("/Search/:id", async (req, res) => {
   try {
     let token = req.cookies.jwt;
@@ -113,7 +116,7 @@ router.get("/Search/:id", async (req, res) => {
       if (authUser) {
           const personArray = await models.user.findAll({
             where: {
-              UserId: { [sequelize.Op.not]: req.params.id }
+              UserId: { [Op.not]: req.params.id }
             }
           });
           res.json({ personArray });
@@ -131,7 +134,7 @@ router.get("/Search/:id", async (req, res) => {
 
 // @route   GET
 // @descr   Get another user's profile
-// @access  PRIVATE (TODO)
+// @access  PRIVATE
 router.get("/AssociateProfile/:id", async (req, res) => {
   try {
     let token = req.cookies.jwt;

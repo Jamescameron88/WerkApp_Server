@@ -2,7 +2,9 @@ var express = require("express");
 var router = express.Router();
 var models = require("../models");
 var authService = require("../services/auth");
-const { BOOLEAN } = require("sequelize");
+// const { BOOLEAN } = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
+const { sequelize } = require("../models");
 
 
 // @route   POST
@@ -24,6 +26,7 @@ router.post("/CreateAccount", async (req, res) => {
         IsDeleted: 0,
         Company: req.body.newProfile.Company,
         Occupation: req.body.newProfile.Occupation,
+        ProfilePicURL: "../assets/profilePic.png"
       }
     });
     if (created) {
@@ -54,10 +57,10 @@ router.post("/Login", async (req, res) => {
       res.status(401).json({ message: "Login Failed"})
     } else {
       const authUser = await models.user.findOne({
-        where: { 
-          Email: req.body.logProfile.Email,
-          Password: req.body.logProfile.Password
-        }
+        where: { [Op.and]: [
+          { Email: req.body.logProfile.Email },
+          { Password: req.body.logProfile.Password }
+        ]}
       })
       if (authUser) {
         let token = authService.signPerson(authUser);
@@ -76,26 +79,25 @@ router.post("/Login", async (req, res) => {
 
 // @route   GET
 // @descr   Get the Profile data
-// @access  PRIVATE (TODO)
+// @access  PRIVATE
 router.get("/Profile", async (req, res) => {
 try {
   let token = req.cookies.jwt;
   if (token) {
+    console.log("made it here");
     const authUser = await authService.verifyPerson(token); 
       if (authUser) {
         const personDataFound = await models.user.findOne({
-            where: {
-              UserId: authUser.UserId,
-            }
-          })
-          if (personDataFound) {
-            res.json({ personDataFound})
-          } else {
-            res.status(401);
-            res.json("Must be logged in");
+          where: {
+            UserId: authUser.UserId,
           }
-        }
-      }
+          })
+          res.json({ personDataFound})
+      } else {
+        res.status(401);
+        res.json("Must be logged in");
+      } 
+    }
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error')
@@ -104,38 +106,58 @@ try {
 
 
 // @route   GET
-// @descr   Get a list of all the users
-// @access  PRIVATE (TODO)
-router.get("/Search", async (req, res) => {
+// @descr   Get a list of users except for current user
+// @access  PRIVATE
+router.get("/Search/:id", async (req, res) => {
   try {
-    const peopleProfileData = await models.user.findAll();
-    console.log(peopleProfileData);
-    res.json({ peopleProfileData });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error')
-  }
-});
+    let token = req.cookies.jwt;
+    if (token) {
+      const authUser = await authService.verifyPerson(token); 
+      if (authUser) {
+          const personArray = await models.user.findAll({
+            where: {
+              UserId: { [Op.not]: req.params.id }
+            }
+          });
+          res.json({ personArray });
+        } else {
+          res.status(401);
+          res.json("Must be logged in");
+        }
+    }
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error')
+    }
+  });
 
 
 // @route   GET
 // @descr   Get another user's profile
-// @access  PRIVATE (TODO)
+// @access  PRIVATE
 router.get("/AssociateProfile/:id", async (req, res) => {
-try {
-  const user = await models.user.findByPk(parseInt(req.params.id));
-  res.json({ user });
-  console.log(user);
-} catch (err) {
-  console.error(err.message);
-  res.status(500).send('Server Error');
-}
-});
+  try {
+    let token = req.cookies.jwt;
+    if (token) {
+      const authUser = await authService.verifyPerson(token); 
+      if (authUser) {
+        const user = await models.user.findByPk(parseInt(req.params.id));
+        res.json({ user });
+        } else {
+          res.status(401);
+          res.json("Must be logged in");
+        }
+    }
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error')
+    }
+  });
 
 
 // @route   GET
 // @descr   Log out auth user
-// @access  PRIVATE (TODO)
+// @access  PUBLIC
 router.get("/Logout", function (req, res, next) {
   try {
     res.cookie("jwt", "", { expires: new Date(0) });
@@ -146,31 +168,5 @@ router.get("/Logout", function (req, res, next) {
   }
 });
 
-
-// ================== PRACTICE ================== 
-
-
-// // Search Users, but exclude current user
-router.get("/Search/:id", async (req, res) => {
-  try {
-    const personArray = await models.user.findAll();
-    console.log(JSON.stringify(personArray));
-
-    // finds the index of the UserId in the personArray
-    var indexPosition = personArray.findIndex(function(item, i){
-      return item.UserId === req.params.id // need to replace the 4 with the req.params
-    });
-
-    personArray.splice(indexPosition, 1);
-
-    console.log(JSON.stringify(personArray));
-
-    res.json(personArray);
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
 
 module.exports = router;

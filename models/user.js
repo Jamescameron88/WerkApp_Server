@@ -32,7 +32,8 @@ module.exports = (sequelize, DataTypes) => {
       Company: DataTypes.STRING,
       Occupation: DataTypes.STRING,
       createdAt: DataTypes.DATE,
-      updatedAt: DataTypes.DATE
+      updatedAt: DataTypes.DATE,
+      ProfilePicURL: DataTypes.STRING
     },
     {
       sequelize,

@@ -7,12 +7,34 @@ const { sequelize } = require("../models");
 const user = require("../models/user");
 
 
+// everything inside the try
+// let token = req.cookies.jwt;
+//     if (token) {
+//       const authUser = await authService.verifyPerson(token); 
+//       if (authUser) {
+        
+//         // CODE GOES HERE
+
+//         } else {
+//           res.status(401);
+//           res.json("Must be logged in");
+//         }
+//     }
+
+
+
 // @route   POST
 // @descr   Send Add Associate requests
 // @access  PRIVATE (TODO)
 router.post("/AssociateProfile/:id", async (req, res) => {
   try {
-    // Check if association already exists
+
+    let token = req.cookies.jwt;
+    if (token) {
+      const authUser = await authService.verifyPerson(token); 
+      if (authUser) {
+        
+           // Check if association already exists
     let associates1 = await models.businessassociate.findAll({
       where: {
         a_Users_UserId: req.body.Self.UserId,
@@ -38,6 +60,44 @@ router.post("/AssociateProfile/:id", async (req, res) => {
     } else {
       res.json('Request already in process');
     };
+        } else {
+          res.status(401);
+          res.json("Must be logged in");
+        }
+    }
+
+
+
+
+
+
+
+    // // Check if association already exists
+    // let associates1 = await models.businessassociate.findAll({
+    //   where: {
+    //     a_Users_UserId: req.body.Self.UserId,
+    //     b_Users_UserId: req.body.ListProfile.UserId
+    //   }
+    // });
+    // if (associates1.length === 0 ) {
+    //   let requestSent = await models.businessassociate.findOrCreate({
+    //     where: {
+    //       a_Users_UserId: req.body.Self.UserId,
+    //       b_Users_UserId: req.body.ListProfile.UserId,
+    //       RequestStatus: "RequestSent"
+    //     }
+    //   });
+    //   let requestReceived = await models.businessassociate.findOrCreate({
+    //     where: {
+    //       b_Users_UserId: req.body.Self.UserId,
+    //       a_Users_UserId: req.body.ListProfile.UserId,
+    //       RequestStatus: "RequestReceived"
+    //     }
+    //   });
+    //   res.json(associates1);
+    // } else {
+    //   res.json('Request already in process');
+    // };
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

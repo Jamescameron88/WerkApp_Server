@@ -22,19 +22,36 @@ const user = require("../models/user");
 //     }
 
 
+// @route   POST
+// @descr   Check what the relationship status is
+// @access  PRIVATE (TODO)
+router.post("/AssociateRelationshipStatus", async (req, res) => {
+  try {
+    const checkAssociationStatus = await models.businessassociate.findOne({
+      where: {
+        a_Users_UserId: req.body.Self.UserId,
+        b_Users_UserId: req.body.ListProfile.UserId
+      }
+    })
+    if (checkAssociationStatus.length === 0) {
+      associationStatus = {"associationStatus":"NotAssociates"}
+    } else {
+      associationStatus = {"associationStatus":checkAssociationStatus.dataValues.RequestStatus};
+    }
+    res.json(associationStatus);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 // @route   POST
 // @descr   Send Add Associate requests
 // @access  PRIVATE (TODO)
 router.post("/AssociateProfile/:id", async (req, res) => {
   try {
-
-    let token = req.cookies.jwt;
-    if (token) {
-      const authUser = await authService.verifyPerson(token); 
-      if (authUser) {
-        
-           // Check if association already exists
+    console.log(req.cookies.jwt);
     let associates1 = await models.businessassociate.findAll({
       where: {
         a_Users_UserId: req.body.Self.UserId,
@@ -60,44 +77,6 @@ router.post("/AssociateProfile/:id", async (req, res) => {
     } else {
       res.json('Request already in process');
     };
-        } else {
-          res.status(401);
-          res.json("Must be logged in");
-        }
-    }
-
-
-
-
-
-
-
-    // // Check if association already exists
-    // let associates1 = await models.businessassociate.findAll({
-    //   where: {
-    //     a_Users_UserId: req.body.Self.UserId,
-    //     b_Users_UserId: req.body.ListProfile.UserId
-    //   }
-    // });
-    // if (associates1.length === 0 ) {
-    //   let requestSent = await models.businessassociate.findOrCreate({
-    //     where: {
-    //       a_Users_UserId: req.body.Self.UserId,
-    //       b_Users_UserId: req.body.ListProfile.UserId,
-    //       RequestStatus: "RequestSent"
-    //     }
-    //   });
-    //   let requestReceived = await models.businessassociate.findOrCreate({
-    //     where: {
-    //       b_Users_UserId: req.body.Self.UserId,
-    //       a_Users_UserId: req.body.ListProfile.UserId,
-    //       RequestStatus: "RequestReceived"
-    //     }
-    //   });
-    //   res.json(associates1);
-    // } else {
-    //   res.json('Request already in process');
-    // };
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -110,6 +89,10 @@ router.post("/AssociateProfile/:id", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.post("/Notifications/RequestsReceived", async (req, res) => {
   try {
+    console.log("beginning of test");
+    console.log(req.body.profile.UserId);
+    console.log(req.cookies.jwt);
+    console.log("end of test");
     const happyResult =  await models.businessassociate.findAll({
     where: {
       a_Users_UserId: req.body.profile.UserId,
@@ -205,7 +188,7 @@ router.post("/Notifications/RequestsSent", async (req, res) => {
 router.put("/UpdateRequest", async (req, res) => {
   try {
     // find the user who had received the request
-    // change their status to RequestAccepted
+    // change their status to RequestStatus (set on FrontEnd)
     const userAccepted = await models.businessassociate.update(
      { RequestStatus: req.body.requestResponse.RequestStatus },
      { where: { 
@@ -214,7 +197,7 @@ router.put("/UpdateRequest", async (req, res) => {
     }  
   });
     // find the user who had sent the request
-    // change their status to RequestAccepted
+    // change their status to RequestStatus (set on FrontEnd)
     const userAccepted2 = await models.businessassociate.update(
       { RequestStatus: req.body.requestResponse.RequestStatus },
       { where: { 

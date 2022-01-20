@@ -84,7 +84,6 @@ router.get("/Profile", async (req, res) => {
 try {
   let token = req.cookies.jwt;
   if (token) {
-    console.log("made it here");
     const authUser = await authService.verifyPerson(token); 
       if (authUser) {
         const personDataFound = await models.user.findOne({

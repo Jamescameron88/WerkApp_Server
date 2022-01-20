@@ -27,17 +27,12 @@ const user = require("../models/user");
 // @access  PRIVATE (TODO)
 router.post("/AssociateRelationshipStatus", async (req, res) => {
   try {
-    const checkAssociationStatus = await models.businessassociate.findOne({
+    const associationStatus = await models.businessassociate.findOne({
       where: {
         a_Users_UserId: req.body.Self.UserId,
         b_Users_UserId: req.body.ListProfile.UserId
       }
     })
-    if (checkAssociationStatus.length === 0) {
-      associationStatus = {"associationStatus":"NotAssociates"}
-    } else {
-      associationStatus = {"associationStatus":checkAssociationStatus.dataValues.RequestStatus};
-    }
     res.json(associationStatus);
   } catch (err) {
     console.error(err.message);

@@ -28,13 +28,15 @@ const user = require("../models/user");
 router.post("/AssociateRelationshipStatus", async (req, res) => {
   try {
     let associationStatus = await models.businessassociate.findOne({
-=======
-    const checkAssociationStatus = await models.businessassociate.findOne({
       where: {
         a_Users_UserId: req.body.Self.UserId,
         b_Users_UserId: req.body.ListProfile.UserId
       }
     })
+    if (!associationStatus) {
+      associationStatus = {"RequestStatus":"NotAssociates"}
+    }
+    res.json({associationStatus});
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

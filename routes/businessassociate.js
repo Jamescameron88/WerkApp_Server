@@ -26,6 +26,10 @@ const user = require("../models/user");
 // @descr   Check what the relationship status is
 // @access  PRIVATE (TODO)
 router.post("/AssociateRelationshipStatus", async (req, res) => {
+  
+  let token = req.cookies.jwt;
+  console.log('friends', token);
+  
   try {
     let associationStatus = await models.businessassociate.findOne({
       where: {

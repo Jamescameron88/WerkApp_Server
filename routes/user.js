@@ -1,5 +1,6 @@
 var express = require("express");
 var router = express.Router();
+const { check, validationResult } = require('express-validator');
 var models = require("../models");
 var authService = require("../services/auth");
 // const { BOOLEAN } = require("sequelize");
@@ -10,7 +11,19 @@ const { sequelize } = require("../models");
 // @route   POST
 // @descr   Create a user account
 // @access  PUBLIC
-router.post("/CreateAccount", async (req, res) => {  
+router.post("/CreateAccount", [
+  check('newProfile.FirstName', 'First Name is required').not().isEmpty(),
+  check('newProfile.LastName', 'Last Name is required').not().isEmpty(),
+  check('newProfile.Email', 'Please include a valid email').isEmail(),
+  check('newProfile.Password', 'Please enter a password with 2 or more characters').isLength({ min:2 })
+], async (req, res) => {    
+  
+  const errors = validationResult(req);
+  console.log(req);
+  if(!errors.isEmpty()){
+    return res.status(400).json({ errors: errors.array() });
+  }
+  
   try {
     const [userData, created] = await models.user.findOrCreate({
       where: {
@@ -45,7 +58,17 @@ router.post("/CreateAccount", async (req, res) => {
 // @route   POST
 // @descr   Login to a user account
 // @access  PUBLIC
-router.post("/Login", async (req, res) => {
+router.post("/Login", [
+  check('logProfile.Email', 'Please include a valid email').isEmail(),
+  check('logProfile.Password', 'Please enter your password').not().isEmpty()
+], async (req, res) => {
+  
+  const errors = validationResult(req);
+  console.log(req);
+  if(!errors.isEmpty()){
+    return res.status(400).json({ errors: errors.array() });
+  }
+  
   try {
     const loginUser = await models.user.findOne({
       where: {
@@ -56,7 +79,7 @@ router.post("/Login", async (req, res) => {
       console.log('Person not found')
       res.status(401).json({ message: "Login Failed"})
     } else {
-      const authUser = await models.user.findOne({
+       const authUser = await models.user.findOne({
         where: { [Op.and]: [
           { Email: req.body.logProfile.Email },
           { Password: req.body.logProfile.Password }
@@ -91,7 +114,7 @@ try {
             UserId: authUser.UserId,
           }
           })
-          res.json({ personDataFound})
+          res.json({ personDataFound })
       } else {
         res.status(401);
         res.json("Must be logged in");
@@ -99,7 +122,7 @@ try {
     }
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error')
+    res.status(500).send('Server Error');
   }
 });
 
@@ -161,6 +184,62 @@ router.get("/Logout", function (req, res, next) {
   try {
     res.cookie("jwt", "", { expires: new Date(0) });
   res.json("Logged Out!!!");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// ====================== TESTING ======================
+
+
+// @route   GET
+// @descr   Get the Profile data
+// @access  PUBLIC (for testing)
+router.get("/PublicProfile", async (req, res) => {
+  try {
+    const personDataFound = await models.user.findOne({
+      where: {
+        UserId: req.body.UserId
+      }
+    });
+    res.json({ personDataFound }); 
+  } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  });
+
+
+// @route   PUT
+// @descr   Edit user profile
+// @access  PUBLIC (for testing)
+router.put("/PublicUpdateUserProfile", async (req, res) => {
+  try {
+    const { FirstName, LastName, Email, Username, Company, Occupation } = req.body.EditProfile;
+    
+    const profileRecord = await models.user.update(
+      { 
+        FirstName,
+        LastName,
+        Email,
+        Username,
+        Company,
+        Occupation
+      },
+      { where: {
+          UserId: req.body.EditProfile.UserId
+        }
+    });
+
+    const EditProfile = await models.user.findOne({
+      where: {
+        UserId:req.body.EditProfile.UserId
+      }
+    })
+
+    res.json({ EditProfile });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

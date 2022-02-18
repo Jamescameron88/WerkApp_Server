@@ -33,8 +33,8 @@ router.post("/AssociateRelationshipStatus", async (req, res) => {
   try {
     let associationStatus = await models.businessassociate.findOne({
       where: {
-        a_Users_UserId: req.body.Self.UserId,
-        b_Users_UserId: req.body.ListProfile.UserId
+        a_Users_UserId: req.body.self.UserId,
+        b_Users_UserId: req.body.listProfile.UserId
       }
     })
     if (!associationStatus) {

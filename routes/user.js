@@ -215,9 +215,9 @@ router.get("/PublicProfile", async (req, res) => {
 // @route   PUT
 // @descr   Edit user profile
 // @access  PUBLIC (for testing)
-router.put("/PublicUpdateUserProfile", async (req, res) => {
+router.put("/PublicUpdateUserProfile/:id", async (req, res) => {
   try {
-    const { FirstName, LastName, Email, Username, Company, Occupation } = req.body.EditProfile;
+    const { FirstName, LastName, Email, Username, Company, Occupation } = req.body.editProfile;
     
     const profileRecord = await models.user.update(
       { 
@@ -229,13 +229,13 @@ router.put("/PublicUpdateUserProfile", async (req, res) => {
         Occupation
       },
       { where: {
-          UserId: req.body.EditProfile.UserId
+          UserId: req.params.id
         }
     });
 
     const EditProfile = await models.user.findOne({
       where: {
-        UserId:req.body.EditProfile.UserId
+        UserId:req.params.id
       }
     })
 

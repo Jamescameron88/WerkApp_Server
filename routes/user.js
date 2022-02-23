@@ -64,7 +64,7 @@ router.post("/Login", [
 ], async (req, res) => {
   
   const errors = validationResult(req);
-  console.log(req);
+  // console.log(req);
   if(!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
@@ -77,7 +77,8 @@ router.post("/Login", [
     })
     if (!loginUser) {
       console.log('Person not found')
-      res.status(401).json({ message: "Login Failed"})
+      res.json("Person not found")
+      // res.status(401).json({ message: "Login Failed"})
     } else {
        const authUser = await models.user.findOne({
         where: { [Op.and]: [
@@ -91,6 +92,7 @@ router.post("/Login", [
         res.json(token);
       } else {
         console.log("Wrong Password");
+        res.json("Wrong Password")
       }
     }
   } catch (err) {
@@ -217,7 +219,7 @@ router.get("/PublicProfile", async (req, res) => {
 // @access  PUBLIC (for testing)
 router.put("/PublicUpdateUserProfile/:id", async (req, res) => {
   try {
-    const { FirstName, LastName, Email, Username, Company, Occupation } = req.body.editProfile;
+    const { FirstName, LastName, Email, Username, Company, Occupation } = req.body.EditProfile;
     
     const profileRecord = await models.user.update(
       { 

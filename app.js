@@ -6,10 +6,12 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 
+// This makes the routes (A)
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/user');
 var associatesRouter = require('./routes/businessassociate');
-
+var crewRouter = require('./routes/crewandmembers');
+var jobRouter = require('./routes/job');
 
 var app = express();
 
@@ -31,10 +33,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// This makes the routes (B)
 app.use('/', indexRouter);
 app.use('/user', usersRouter);
 app.use('/businessassociate', associatesRouter);
-
+app.use('/crewandmembers', crewRouter);
+app.use('/job', jobRouter);
 
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');

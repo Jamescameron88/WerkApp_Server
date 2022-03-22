@@ -11,46 +11,26 @@ const { sequelize } = require("../models");
 // @route   POST
 // @descr   Create a job (header)
 // @access  PRIVATE (TODO)
-router.post("/CreateJob", async (req, res) => {
-    
+router.post("/CreateShift", async (req, res) => {
   
-  try {
-      console.log(typeof req.body.newJob.NumberOfWerkers);
-      for (let i = 0; i < req.body.newJob.NumberOfWerkers; i++) {
-        
-        console.log("count it");
-        
-        let createAShift = await models.jobshifts.findOrCreate({
+  try { 
+        let createAShift = await models.shifts.findOrCreate({
           where: {
-            SchedulerJobId: req.body.newJob.JobID,
-            DateDay: req.body.newJob.Date,
-            StartDateTime: req.body.newJob.BeginTime,
-            FinishDateTime: req.body.newJob.EndTime,
-            Company: req.body.newJob.Company,
-            Location: req.body.newJob.Location,
-            Pay: req.body.newJob.Pay,
-            ShiftNotes: req.body.newJob.Notes,  
-            Scheduler_Users_UserId: req.body.newJob.UserId,
-            NumberOfWerkers: i
+            ShiftIdentifier: req.body.newShift.ShiftIdentifier,
+            DateDay: req.body.newShift.DateDay,
+            StartDateTime: req.body.newShift.StartDateTime,
+            FinishDateTime: req.body.newShift.FinishDateTime,
+            Company: req.body.newShift.Company,
+            Location: req.body.newShift.Location,
+            Pay: req.body.newShift.Pay,
+            ShiftNotes: req.body.newShift.ShiftNotes,  
+            UserUserId: req.body.newShift.UserUserId,
+            NumberOfWerkers: req.body.newShift.NumberOfWerkers
           },
-          defaults: {
-            SchedulerJobId: req.body.newJob.JobID,
-            DateDay: req.body.newJob.Date,
-            StartDateTime: req.body.newJob.BeginTime,
-            FinishDateTime: req.body.newJob.EndTime,
-            Company: req.body.newJob.Company,
-            Location: req.body.newJob.Location,
-            Pay: req.body.newJob.Pay,
-            ShiftNotes: req.body.newJob.Notes,  
-            Scheduler_Users_UserId: req.body.newJob.UserId,
-            NumberOfWerkers: ""
-          }
+          
         })
-      }
       
-
-
-      res.json({"it worked":"sweet!"});
+      res.json({createAShift});
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

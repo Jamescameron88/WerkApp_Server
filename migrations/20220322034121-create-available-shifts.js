@@ -1,17 +1,16 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('CrewMembers', {
-      CrewMemberId: {
+    await queryInterface.createTable('AvailableShifts', {
+      AvailableShiftId: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      // CrewName_CrewID: {
+        type: Sequelize.INTEGER      },
+      // UsersUserId: {
       //   type: Sequelize.INTEGER
       // },
-      // Users_UserId: {
+      // ShiftId: {
       //   type: Sequelize.INTEGER
       // },
       createdAt: {
@@ -25,6 +24,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('CrewMembers');
+    await queryInterface.dropTable('AvailableShifts');
   }
 };

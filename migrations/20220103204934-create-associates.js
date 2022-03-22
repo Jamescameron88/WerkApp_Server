@@ -8,12 +8,12 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      a_Users_UserId: {
-        type: Sequelize.INTEGER
-      },
-      b_Users_UserId: {
-        type: Sequelize.INTEGER
-      },
+      // a_Users_UserId: {
+      //   type: Sequelize.INTEGER
+      // },
+      // b_Users_UserId: {
+      //   type: Sequelize.INTEGER
+      // },
       RequestStatus: {
         type: Sequelize.STRING
       },

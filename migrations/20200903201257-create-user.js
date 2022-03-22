@@ -2,13 +2,10 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('Users', {
-      id: {
+      UserId: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      UserId: {
         type: Sequelize.INTEGER
       },
       FirstName: {
@@ -26,19 +23,16 @@ module.exports = {
       Password: {
         type: Sequelize.STRING
       },
-      isScheduler: {
+      IsScheduler: {
         type: Sequelize.BOOLEAN
       },
-      isDeleted: {
+      IsDeleted: {
         type: Sequelize.BOOLEAN
       },
-      company: {
+      Company: {
         type: Sequelize.STRING
       },
-      occupation: {
-        type: Sequelize.STRING
-      },
-      associates: {
+      Occupation: {
         type: Sequelize.STRING
       },
       createdAt: {
@@ -48,6 +42,9 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      ProfilePicURL: {
+        type: Sequelize.STRING
       }
     });
   },

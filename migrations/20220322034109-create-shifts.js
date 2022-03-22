@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('JobShifts', {
+    await queryInterface.createTable('Shifts', {
       ShiftId: {
         allowNull: false,
         autoIncrement: true,
@@ -10,10 +10,16 @@ module.exports = {
       // Users_UserId: {
       //   type: Sequelize.INTEGER
       // },
-      // Jobs_JobId: {
-      //   type: Sequelize.INTEGER
-      // },
-      SchedulerJobId: {
+      ShiftIdentifier: {
+        type: Sequelize.STRING
+      },
+      POCName: {
+        type: Sequelize.STRING
+      },
+      POCPhone: {
+        type: Sequelize.STRING
+      },
+      Pay: {
         type: Sequelize.STRING
       },
       DateDay: {
@@ -25,20 +31,20 @@ module.exports = {
       FinishDateTime: {
         type: Sequelize.DATE
       },
+      ShiftNotes: {
+        type: Sequelize.STRING
+      },
       Company: {
         type: Sequelize.STRING
       },
       Location: {
         type: Sequelize.STRING
       },
-      Pay: {
-        type: Sequelize.STRING
+      SchedulerApproval: {
+        type: Sequelize.BOOLEAN
       },
       NumberOfWerkers: {
-        type: Sequelize.STRING
-      },
-      ShiftNotes: {
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,
@@ -51,6 +57,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('JobShifts');
+    await queryInterface.dropTable('Shifts');
   }
 };

@@ -37,11 +37,12 @@ db.Sequelize = Sequelize;
 // Mirror the /models file names
 db.user = require("./user")(sequelize, Sequelize);
 db.businessassociate = require("./businessassociate")(sequelize,Sequelize);
-db.crewname = require("./crewname")(sequelize, Sequelize);
-db.crewmembers = require("./crewmembers")(sequelize, Sequelize);
-db.job = require("./job")(sequelize, Sequelize);
-db.jobshifts = require("./jobshifts")(sequelize, Sequelize);
-db.availablejobs = require("./availablejobs")(sequelize, Sequelize);
+// db.crewname = require("./crewname")(sequelize, Sequelize);
+// db.crewmembers = require("./crewmembers")(sequelize, Sequelize);
+// db.job = require("./job")(sequelize, Sequelize);
+db.shifts = require("./shifts")(sequelize, Sequelize);
+db.availableshifts = require("./availableshifts")(sequelize, Sequelize);
+db.usershifts = require("./usershifts")(sequelize, Sequelize);
 
 
 // ============ DB Relationships ============
@@ -54,42 +55,38 @@ db.businessassociate.belongsTo(db.user, {
   foreignKey: "b_Users_UserId"
 });
 
+//  Users to Shifts
+db.user.hasMany(db.shifts);
+db.shifts.belongsTo(db.user);
+
+//  Users to AvailableShifts
+db.user.hasMany(db.availableshifts);
+db.availableshifts.belongsTo(db.user);
+
+//  Shifts to AvailableShifts
+db.shifts.hasMany(db.availableshifts);
+db.availableshifts.belongsTo(db.shifts);
+
+//  Shifts to UserShifts
+db.shifts.hasMany(db.usershifts);
+db.usershifts.belongsTo(db.shifts);
+
+//  Users to UserShifts
+db.user.hasMany(db.usershifts);
+db.usershifts.belongsTo(db.user);
+
+
 //  Users to CrewName
-db.user.hasMany(db.crewname);
-db.crewname.belongsTo(db.user);
+// db.user.hasMany(db.crewname);
+// db.crewname.belongsTo(db.user);
 
 //  Users to CrewMembers
-db.user.hasMany(db.crewmembers);
-db.crewmembers.belongsTo(db.user);
+// db.user.hasMany(db.crewmembers);
+// db.crewmembers.belongsTo(db.user);
 
 //  CrewName to CrewMembers
-db.crewname.hasMany(db.crewmembers);
-db.crewmembers.belongsTo(db.crewname);
-
-//  Users to Jobs
-db.user.hasMany(db.job);
-db.job.belongsTo(db.user);
-
-//  Users to AvailableJobs
-db.user.hasMany(db.availablejobs);
-db.availablejobs.belongsTo(db.user);
-
-//  Users to JobShifts
-db.user.hasMany(db.jobshifts);
-db.jobshifts.belongsTo(db.user, {
-  foreignKey: "Scheduler_Users_UserId"
-});
-db.jobshifts.belongsTo(db.user, {
-  foreignKey: "Werker_Users_UserId"
-});
-
-//  Jobs to AvailableJobs
-// db.job.hasMany(db.availablejobs);
-// db.availablejobs.belongsTo(db.job);
-
-// //  Jobs to JobShifts
-// db.job.hasMany(db.jobshifts);
-// db.jobshifts.belongsTo(db.job);
+// db.crewname.hasMany(db.crewmembers);
+// db.crewmembers.belongsTo(db.crewname);
 
 // ============ End of DB Relationships ============
 

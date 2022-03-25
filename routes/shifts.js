@@ -6,6 +6,7 @@ var authService = require("../services/auth");
 // const { BOOLEAN } = require("sequelize");
 const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../models");
+const shifts = require("../models/shifts");
 
 
 // @route   POST
@@ -63,45 +64,60 @@ router.post("/PublishJob", async (req, res) => {
 //  @descr  Get a list of the jobs that are available for the logged in werker
 //  @access PRIVATE (TODO)
 router.get("/AvailableShifts/:id", async (req, res) => {
-  var availableShiftsArray = [];
   try {
     let availableShifts = await models.availableshifts.findAll({
+      attributes: [
+        'ShiftShiftId'
+      ],
       where: {
         UserUserId: req.params.id
       }, 
-      include: models.shifts
+      include: [
+        { model: models.shifts,
+          attributes: [
+            'UserUserId',
+            'Company',
+            'DateDay'
+          ],
+          include: [
+            {
+              model: models.user,
+              attributes: [
+                'ProfilePicURL'
+              ]
+            }
+          ]
+        },
+      ],
+      raw: true,
     });
+    
+    var str = JSON.stringify(availableShifts);
+    str = str.replace(/ShiftShiftId/g,'JJobId');
+    str = str.replace(/Shift.UserUserId/g,'SchedulerId');
+    str = str.replace(/Shift.Company/g,'Company');
+    str = str.replace(/Shift.DateDay/g,'Date');
+    str = str.replace(/Shift.User.UserId/g,'JJobId2');    
+    str = str.replace(/Shift.User.ProfilePicURL/g,'SchedulerProfilePicURL');
 
-    console.log(JSON.stringify(availableShifts.length));
 
-    let x = 0;
-    for (let i = 0; i < availableShifts.length; i++) {
+    // console.log(str);
 
-      console.log(JSON.stringify(availableShifts[i].Shift.ShiftId));
+    const availableShifts2 = JSON.parse(str);
 
-      let singleShift = await models.usershifts.findAndCountAll({
-        where: {
-          ShiftShiftId: availableShifts[i].Shift.ShiftId
-        }
-      })
 
-      console.log(availableShifts[i].Shift.NumberOfWerkers);
-      console.log(singleShift.count);
-      console.log(availableShifts[i].Shift.NumberOfWerkers - singleShift.count);
+    // var newAvailableShifts = [{
+    //   JJobId: availableShifts[0].ShiftShiftId,
+    //   SchedulerId: "Trey",
+      // Company: availableShifts[0].['Shift.Company'],
+      // Date: availableShifts[0].Shift.DateDay,
+      // SchedulerProfilePicURL: availableShifts[0].Shift.User.SchedulerProfilePicURL
+    // }]
+    // console.log(availableShifts[0]);
 
-      if (availableShifts[i].Shift.NumberOfWerkers - singleShift.count > 0) {
-        console.log("there is an available shift");
-        availableShiftsArray[x] = availableShifts[i];
-        x++;
-      } else {
-        console.log("no shifts available")
-      }
-    }
-
-    console.log(JSON.stringify(availableShiftsArray));
-
-    res.json({availableShiftsArray});
-
+    // res.json({ availableShiftsArray });
+    // console.log(newAvailableShifts)
+    res.json(availableShifts2);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

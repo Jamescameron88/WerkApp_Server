@@ -66,24 +66,24 @@ router.post("/PublishJob", async (req, res) => {
 router.get("/AvailableShifts/:id", async (req, res) => {
   try {
     let availableShifts = await models.availableshifts.findAll({
-      attributes: [
-        'ShiftShiftId'
-      ],
+      attributes: [['ShiftShiftId','JJobId']],
       where: {
-        UserUserId: req.params.id
+        UserUserId: req.params.id,
       }, 
       include: [
         { model: models.shifts,
           attributes: [
-            'UserUserId',
+            ['UserUserId','SchedulerId'],
             'Company',
-            'DateDay'
+            'NumberOfWerkers',
+            ['DateDay','Date']
           ],
           include: [
             {
               model: models.user,
               attributes: [
-                'ProfilePicURL'
+                ['UserId','JJobId2']
+                ,['ProfilePicURL','SchedulerProfilePicURL']
               ]
             }
           ]
@@ -91,38 +91,93 @@ router.get("/AvailableShifts/:id", async (req, res) => {
       ],
       raw: true,
     });
-    
+
     var str = JSON.stringify(availableShifts);
-    str = str.replace(/ShiftShiftId/g,'JJobId');
-    str = str.replace(/Shift.UserUserId/g,'SchedulerId');
-    str = str.replace(/Shift.Company/g,'Company');
-    str = str.replace(/Shift.DateDay/g,'Date');
-    str = str.replace(/Shift.User.UserId/g,'JJobId2');    
-    str = str.replace(/Shift.User.ProfilePicURL/g,'SchedulerProfilePicURL');
+    str = str.replace(/Shift.User./g,'');
+    str = str.replace(/Shift./g,'');
+    var availableShifts2 = JSON.parse(str);
 
+    var shiftCheckArray = [];
+    x = 0;
+    for (let i = 0; i < availableShifts.length; i++) {
+      let availableShiftsCount = await models.usershifts.findAll({
+        where: {
+          ShiftShiftId: availableShifts2[i].JJobId
+        }, 
+        raw: true
+      });
 
-    // console.log(str);
+      console.log(availableShifts2[i].JJobId);
+      console.log(availableShifts2[i].NumberOfWerkers);
+      console.log(availableShiftsCount.length);
+      console.log(availableShifts2[i].NumberOfWerkers - availableShiftsCount.length);
 
-    const availableShifts2 = JSON.parse(str);
+      if (availableShiftsCount[0] == null) {
+        console.log('null, no werkers have taken any shifts');
+        shiftCheckArray[x] = availableShifts2[i];
+        x++;
+      } else if (availableShiftsCount[0].UserUserId = req.params.id) {
+        console.log('user already has this shift - not available for him');
+      } else if (availableShifts2[i].NumberOfWerkers - availableShiftsCount.length > 0) {
+        shiftCheckArray[x] = availableShifts2[i];
+        x++;
+      } else {
+        console.log('this probably shouldnt have happened');
+      }};
 
+    console.log(shiftCheckArray);
+    availableShifts2 = shiftCheckArray;
 
-    // var newAvailableShifts = [{
-    //   JJobId: availableShifts[0].ShiftShiftId,
-    //   SchedulerId: "Trey",
-      // Company: availableShifts[0].['Shift.Company'],
-      // Date: availableShifts[0].Shift.DateDay,
-      // SchedulerProfilePicURL: availableShifts[0].Shift.User.SchedulerProfilePicURL
-    // }]
-    // console.log(availableShifts[0]);
-
-    // res.json({ availableShiftsArray });
-    // console.log(newAvailableShifts)
-    res.json(availableShifts2);
+    res.json({availableShifts2});
+    
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
-})
+});
+
+
+// @route   GET
+// @descr   Retrieve shift details
+// @access  PRIVATE (TODO)
+router.post("/ShiftDetails/id:", async (req, res) => {
+  try {  
+  
+    let werkShift = await models.usershifts.findOrCreate({
+      where: {
+        ShiftId: req.params.id
+      },
+    })
+
+    res.json({ werkShift });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// @route   POST
+// @descr   Werker claim a shift
+// @access  PRIVATE (TODO)
+router.post("/WerkShift", async (req, res) => {
+  try {  
+  
+    let werkShift = await models.usershifts.findOrCreate({
+      where: {
+        UserUserId: req.body.me.UserUserId,
+        ShiftShiftId: req.body.me.ShiftShiftId
+      },
+    })
+
+    res.json({ werkShift });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
 
 
   module.exports = router;

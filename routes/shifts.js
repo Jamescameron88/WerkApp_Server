@@ -140,21 +140,20 @@ router.get("/AvailableShifts/:id", async (req, res) => {
 // @route   GET
 // @descr   Retrieve shift details
 // @access  PRIVATE (TODO)
-router.post("/ShiftDetails/id:", async (req, res) => {
+router.get("/ShiftDetails/:id", async (req, res) => {
   try {  
-  
-    let werkShift = await models.usershifts.findOrCreate({
+    let werkShift = await models.shifts.findOne({
       where: {
         ShiftId: req.params.id
       },
     })
-
     res.json({ werkShift });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
+
 
 
 // @route   POST

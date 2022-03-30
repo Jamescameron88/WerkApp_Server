@@ -155,21 +155,81 @@ router.get("/ShiftDetails/:id", async (req, res) => {
 });
 
 
-
 // @route   POST
 // @descr   Werker claim a shift
 // @access  PRIVATE (TODO)
-router.post("/WerkShift", async (req, res) => {
+router.post("/WerkShift/", async (req, res) => {
   try {  
   
+    console.log(req.body);
     let werkShift = await models.usershifts.findOrCreate({
       where: {
-        UserUserId: req.body.me.UserUserId,
-        ShiftShiftId: req.body.me.ShiftShiftId
+        UserUserId: req.body.werkJob.UserId,
+        ShiftShiftId: req.body.werkJob.ShiftId
       },
     })
 
     res.json({ werkShift });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// @route   PUT
+// @descr   Get list of jobs that a Werker has coming up
+// @access  PRIVATE (TODO)
+router.get("/MyScheduledJobs/:id", async (req, res) => {
+  try {  
+  
+    console.log(req.params.id);
+
+    // let scheduledShifts = await models.usershifts.findOrCreate({
+    //   where: {
+    //     UserUserId: req.params.id,
+    //   },
+    // })
+
+    let scheduledShifts = await models.usershifts.findAll({
+      // attributes: [['ShiftShiftId']],
+      where: {
+        UserUserId: req.params.id,
+      }, 
+      include: [
+        { model: models.shifts,
+          attributes: [
+            ['UserUserId','SchedulerId'],
+            'Company',
+            'NumberOfWerkers',
+            ['DateDay','Date']
+          ],
+          include: [
+            {
+              model: models.user,
+              attributes: [
+                ['UserId','JJobId2']
+                ,['ProfilePicURL','SchedulerProfilePicURL']
+              ]
+            }
+          ]
+        },
+      ],
+      raw: true,
+    });
+
+    var str = JSON.stringify(scheduledShifts);
+    str = str.replace(/Shift.User./g,'');
+    str = str.replace(/Shift.SchedulerId/g,'SchedulerId');
+    str = str.replace(/Shift.Company/g,'Company');
+    str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
+    str = str.replace(/Shift.Date/g,'Date');
+
+    var scheduledShifts2 = JSON.parse(str);
+
+    console.log(scheduledShifts2);
+
+    res.json({ scheduledShifts2 });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

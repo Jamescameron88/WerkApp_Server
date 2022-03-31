@@ -185,16 +185,11 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
   
     console.log(req.params.id);
 
-    // let scheduledShifts = await models.usershifts.findOrCreate({
-    //   where: {
-    //     UserUserId: req.params.id,
-    //   },
-    // })
-
     let scheduledShifts = await models.usershifts.findAll({
       // attributes: [['ShiftShiftId']],
       where: {
         UserUserId: req.params.id,
+        ShiftStatus: null
       }, 
       include: [
         { model: models.shifts,
@@ -237,6 +232,50 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
 });
 
 
+// @route   PUT
+// @descr   Update UserShift with werker status
+// @access  PRIVATE (TODO)
+router.put("/ShiftStatusUpdate/", async (req, res) => {
+  try {  
+  
+    const werkerTest = await models.usershifts.update(
+      { ShiftStatus: req.body.updateWerkerShiftStatus.UpdateStatus },
+      { where: {
+        UserUserId: req.body.updateWerkerShiftStatus.UserId,
+        ShiftShiftId: req.body.updateWerkerShiftStatus.ShiftId
+      }
+    });
+
+    res.json('Status updated');
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// @route   PUT
+// @descr   Update UserShift when paid
+// @access  PRIVATE (TODO)
+router.put("/WerkerIsPaid/", async (req, res) => {
+  try {  
+  
+    const werkerTest = await models.usershifts.update(
+      { IsPaid: req.body.updateWerkerShiftStatus.IsPaid },
+      { where: {
+        UserUserId: req.body.updateWerkerShiftStatus.UserId,
+        ShiftShiftId: req.body.updateWerkerShiftStatus.ShiftId
+      }
+    });
+
+    res.json('Status updated');
+
+    res.json({ werkerIsPaid });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 
   module.exports = router;

@@ -21,7 +21,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER
     },
     // ShiftId: DataTypes.INTEGER,
-    // UsersUserId: DataTypes.INTEGER
+    UserUserId: DataTypes.INTEGER,
+    ShiftStatus: DataTypes.STRING,
+    IsPaid: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'UserShifts',

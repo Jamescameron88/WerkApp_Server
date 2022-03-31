@@ -177,7 +177,7 @@ router.post("/WerkShift/", async (req, res) => {
 });
 
 
-// @route   PUT
+// @route   GET
 // @descr   Get list of jobs that a Werker has coming up
 // @access  PRIVATE (TODO)
 router.get("/MyScheduledJobs/:id", async (req, res) => {
@@ -225,6 +225,61 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
     console.log(scheduledShifts2);
 
     res.json({ scheduledShifts2 });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// @route   GET
+// @descr   Get list of past jobs for a Werker
+// @access  PRIVATE (TODO)
+router.get("/MyPastJobs/:id", async (req, res) => {
+  try {  
+  
+    console.log(req.params.id);
+
+    let pastShifts = await models.usershifts.findAll({
+      // attributes: [['ShiftShiftId']],
+      where: {
+        UserUserId: req.params.id,
+        ShiftStatus: !null
+      }, 
+      include: [
+        { model: models.shifts,
+          attributes: [
+            ['UserUserId','SchedulerId'],
+            'Company',
+            'NumberOfWerkers',
+            ['DateDay','Date']
+          ],
+          include: [
+            {
+              model: models.user,
+              attributes: [
+                ['UserId','JJobId2']
+                ,['ProfilePicURL','SchedulerProfilePicURL']
+              ]
+            }
+          ]
+        },
+      ],
+      raw: true,
+    });
+
+    var str = JSON.stringify(pastShifts);
+    str = str.replace(/Shift.User./g,'');
+    str = str.replace(/Shift.SchedulerId/g,'SchedulerId');
+    str = str.replace(/Shift.Company/g,'Company');
+    str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
+    str = str.replace(/Shift.Date/g,'Date');
+
+    var pastShifts2 = JSON.parse(str);
+
+    console.log(pastShifts2);
+
+    res.json({ pastShifts2 });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

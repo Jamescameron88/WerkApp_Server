@@ -7,6 +7,7 @@ var authService = require("../services/auth");
 const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../models");
 const shifts = require("../models/shifts");
+const usershifts = require("../models/usershifts");
 
 
 // @route   POST
@@ -92,42 +93,51 @@ router.get("/AvailableShifts/:id", async (req, res) => {
       raw: true,
     });
 
-    var str = JSON.stringify(availableShifts);
+    // check if the werker has already taken a job
+    let x = 0;
+    let newAvailableShifts = [];
+    for (let i = 0; i < availableShifts.length; i++) {
+      let findMeInAShift = await models.usershifts.findOne({
+        where: { 
+          UserUserId: req.params.id,
+          ShiftShiftId: availableShifts[i].JJobId
+        }
+      });      
+      if (findMeInAShift == undefined) {
+        // console.log('null, werker has not taken shift: ' + availableShifts[i].JJobId);
+        newAvailableShifts[x] = availableShifts[i];
+        x = x + 1;
+        // console.log(x);
+      } else {
+        // console.log('werker has taken shift: ' + availableShifts[i].JJobId);
+      }
+      findMeInAShift = undefined;
+      // console.log(findMeInAShift);
+    };
+
+    var str = JSON.stringify(newAvailableShifts);
     str = str.replace(/Shift.User./g,'');
     str = str.replace(/Shift./g,'');
-    var availableShifts2 = JSON.parse(str);
+    var newAvailableShiftsA = JSON.parse(str);
 
-    var shiftCheckArray = [];
-    x = 0;
-    for (let i = 0; i < availableShifts.length; i++) {
-      let availableShiftsCount = await models.usershifts.findAll({
+    // check if there are any spots left on a shift
+    let y = 0;
+    let availableShifts2 = [];
+    for (let i = 0; i < newAvailableShiftsA.length; i++) {
+      let countShiftWerkers = await models.usershifts.findAll({
         where: {
-          ShiftShiftId: availableShifts2[i].JJobId
-        }, 
-        raw: true
+          ShiftShiftId: newAvailableShiftsA[i].JJobId
+        }
       });
+      console.log(newAvailableShiftsA[i].NumberOfWerkers);
 
-      console.log(availableShifts2[i].JJobId);
-      console.log(availableShifts2[i].NumberOfWerkers);
-      console.log(availableShiftsCount.length);
-      console.log(availableShifts2[i].NumberOfWerkers - availableShiftsCount.length);
 
-      if (availableShiftsCount[0] == null) {
-        console.log('null, no werkers have taken any shifts');
-        shiftCheckArray[x] = availableShifts2[i];
-        x++;
-      } else if (availableShiftsCount[0].UserUserId = req.params.id) {
-        console.log('user already has this shift - not available for him');
-      } else if (availableShifts2[i].NumberOfWerkers - availableShiftsCount.length > 0) {
-        shiftCheckArray[x] = availableShifts2[i];
-        x++;
-      } else {
-        console.log('this probably shouldnt have happened');
-      }};
-
-    console.log(shiftCheckArray);
-    availableShifts2 = shiftCheckArray;
-
+      if (newAvailableShiftsA[i].NumberOfWerkers - countShiftWerkers.length > 0) {
+        availableShifts2[y] = newAvailableShiftsA[i];
+        y = y + 1;
+      }
+    }
+    
     res.json({availableShifts2});
     
   } catch (err) {
@@ -142,11 +152,25 @@ router.get("/AvailableShifts/:id", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.get("/ShiftDetails/:id", async (req, res) => {
   try {  
-    let werkShift = await models.shifts.findOne({
+    let werkShift2 = await models.shifts.findOne({
       where: {
         ShiftId: req.params.id
       },
+      include: [
+        { model: models.usershifts,
+          attributes: [
+            'IsPaid',
+          ],
+        },
+      ],
+      raw: true,
     })
+
+    var str = JSON.stringify(werkShift2);
+    str = str.replace(/UserShifts./g,'');
+    var werkShift = JSON.parse(str);
+
+    console.log(werkShift);
     res.json({ werkShift });
   } catch (err) {
     console.error(err.message);
@@ -160,15 +184,16 @@ router.get("/ShiftDetails/:id", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.post("/WerkShift/", async (req, res) => {
   try {  
-  
     console.log(req.body);
     let werkShift = await models.usershifts.findOrCreate({
       where: {
         UserUserId: req.body.werkJob.UserId,
         ShiftShiftId: req.body.werkJob.ShiftId
       },
+      defaults: {
+        IsPaid: false
+      }
     })
-
     res.json({ werkShift });
   } catch (err) {
     console.error(err.message);
@@ -182,9 +207,6 @@ router.post("/WerkShift/", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.get("/MyScheduledJobs/:id", async (req, res) => {
   try {  
-  
-    console.log(req.params.id);
-
     let scheduledShifts = await models.usershifts.findAll({
       // attributes: [['ShiftShiftId']],
       where: {
@@ -237,14 +259,11 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.get("/MyPastJobs/:id", async (req, res) => {
   try {  
-  
-    console.log(req.params.id);
-
     let pastShifts = await models.usershifts.findAll({
       // attributes: [['ShiftShiftId']],
       where: {
         UserUserId: req.params.id,
-        ShiftStatus: !null
+        ShiftStatus: 'Werked' || 'Cancelled'
       }, 
       include: [
         { model: models.shifts,
@@ -288,11 +307,10 @@ router.get("/MyPastJobs/:id", async (req, res) => {
 
 
 // @route   PUT
-// @descr   Update UserShift with werker status
+// @descr   Update UserShift with werker status (werked or cancelled)
 // @access  PRIVATE (TODO)
 router.put("/ShiftStatusUpdate/", async (req, res) => {
   try {  
-  
     const werkerTest = await models.usershifts.update(
       { ShiftStatus: req.body.updateWerkerShiftStatus.UpdateStatus },
       { where: {
@@ -300,7 +318,6 @@ router.put("/ShiftStatusUpdate/", async (req, res) => {
         ShiftShiftId: req.body.updateWerkerShiftStatus.ShiftId
       }
     });
-
     res.json('Status updated');
   } catch (err) {
     console.error(err.message);
@@ -314,7 +331,6 @@ router.put("/ShiftStatusUpdate/", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.put("/WerkerIsPaid/", async (req, res) => {
   try {  
-  
     const werkerTest = await models.usershifts.update(
       { IsPaid: req.body.updateWerkerShiftStatus.IsPaid },
       { where: {
@@ -322,9 +338,7 @@ router.put("/WerkerIsPaid/", async (req, res) => {
         ShiftShiftId: req.body.updateWerkerShiftStatus.ShiftId
       }
     });
-
     res.json('Status updated');
-
     res.json({ werkerIsPaid });
   } catch (err) {
     console.error(err.message);
@@ -333,4 +347,98 @@ router.put("/WerkerIsPaid/", async (req, res) => {
 });
 
 
-  module.exports = router;
+//  @route  GET
+//  @descr  Get a list of the Scheduler's jobs that still have open shifts
+//  @access PRIVATE (TODO)
+router.get("/SchedAvailableShifts/:id", async (req, res) => {
+
+  try {
+      let shiftInfo = await models.shifts.findAll({
+        where: {
+          UserUserId: req.params.id,
+        }, 
+        
+        raw: true,
+      });
+
+    // check if there are any unfilled shifts
+    let x = 0;
+    let SchedAvailableJob = [];
+    for (let i = 0; i < shiftInfo.length; i++) {
+
+      let findOpenShifts = await models.usershifts.findAll({
+        where: { 
+          ShiftShiftId: shiftInfo[i].ShiftId
+        }
+      });      
+
+      if (findOpenShifts == undefined) {
+        console.log('found a null shift');
+      } else if (shiftInfo[i].NumberOfWerkers - findOpenShifts.length == 0) {
+        console.log('no room available in this shift');
+      } else if (shiftInfo[i].NumberOfWerkers - findOpenShifts.length > 0) {
+        console.log('found some shifts with room');
+        SchedAvailableJob[x] = shiftInfo[i];
+        x = x + 1;
+      }
+      findOpenShifts = undefined;
+    };
+
+    console.log(SchedAvailableJob);
+
+    res.json({SchedAvailableJob});
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// @route   GET
+// @descr   Retrieve shift details
+// @access  PRIVATE (TODO)
+router.get("/SchedShiftDetails/:id", async (req, res) => {
+  
+  try {  
+    let werkShift = await models.shifts.findOne({
+      where: {
+        ShiftId: req.params.id
+      }
+    });
+
+    let werkers = await models.usershifts.findAll({
+      where: {
+        ShiftShiftId: req.params.id
+      },
+    });
+
+    var werkersInfoArray = [];
+    x = 0;
+    for (let i = 0; i < werkers.length; i++) {
+
+      let werkerInfoData = await models.user.findOne({
+        attributes: [
+          'UserId',
+          'FirstName',
+          'LastName'
+        ],
+        where: {
+          UserId: werkers[i].UserUserId
+        },
+      })
+      werkersInfoArray[i] = werkerInfoData;
+    };
+
+    console.log(werkersInfoArray);
+
+    werkers = werkersInfoArray;
+
+    res.json({ werkShift, werkers });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+module.exports = router;

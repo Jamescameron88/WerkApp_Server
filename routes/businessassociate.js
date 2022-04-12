@@ -40,6 +40,7 @@ router.post("/AssociateRelationshipStatus", async (req, res) => {
     if (!associationStatus) {
       associationStatus = {"RequestStatus":"NotAssociates"}
     }
+    
     res.json({associationStatus});
   } catch (err) {
     console.error(err.message);

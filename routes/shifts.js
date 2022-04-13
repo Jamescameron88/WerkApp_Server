@@ -399,6 +399,7 @@ router.get("/SchedAvailableShifts/:id", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.get("/SchedShiftDetails/:id", async (req, res) => {
   
+  //  get the shift details
   try {  
     let werkShift = await models.shifts.findOne({
       where: {
@@ -406,6 +407,7 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
       }
     });
 
+    //  get the werkers that are on the shift
     let werkers = await models.usershifts.findAll({
       where: {
         ShiftShiftId: req.params.id
@@ -428,17 +430,71 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
       })
       werkersInfoArray[i] = werkerInfoData;
     };
-
-    console.log(werkersInfoArray);
-
     werkers = werkersInfoArray;
 
-    res.json({ werkShift, werkers });
+    //  get the number of shifts still open
+
+    // var openShifts = {};
+    let openShifts = { 'unfilledshifts' : (werkShift.NumberOfWerkers - werkers.length) };
+
+    console.log('open shifts = ' + (werkShift.NumberOfWerkers - werkers.length));
+
+
+
+    res.json({ werkShift, werkers, openShifts });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
+
+
+//  @route  GET
+//  @descr  Get a list of the Scheduler's jobs that still have open shifts
+//  @access PRIVATE (TODO)
+router.get("/SchedScheduledShifts/:id", async (req, res) => {
+
+  try {
+      let shiftInfo = await models.shifts.findAll({
+        where: {
+          UserUserId: req.params.id,
+        }, 
+        
+        raw: true,
+      });
+
+    // check if there are any unfilled shifts
+    let x = 0;
+    let SchedScheduledJob = [];
+    for (let i = 0; i < shiftInfo.length; i++) {
+
+      let findOpenShifts = await models.usershifts.findAll({
+        where: { 
+          ShiftShiftId: shiftInfo[i].ShiftId
+        }
+      });      
+
+      if (findOpenShifts == undefined) {
+        console.log('found a null shift');
+      } else if (shiftInfo[i].NumberOfWerkers - findOpenShifts.length == 0) {
+        console.log('this is a scheduled shift');
+        SchedScheduledJob[x] = shiftInfo[i];
+        x = x + 1;
+      } else if (shiftInfo[i].NumberOfWerkers - findOpenShifts.length > 0) {
+        console.log('this shift is still open');
+      }
+      findOpenShifts = undefined;
+    };
+
+    console.log(SchedScheduledJob);
+
+    res.json({SchedScheduledJob});
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 
 module.exports = router;

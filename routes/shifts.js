@@ -401,14 +401,14 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
   
   //  get the shift details
   try {  
-    let werkShift = await models.shifts.findOne({
+    let WerkShift = await models.shifts.findOne({
       where: {
         ShiftId: req.params.id
       }
     });
 
     //  get the werkers that are on the shift
-    let werkers = await models.usershifts.findAll({
+    let Werkers = await models.usershifts.findAll({
       where: {
         ShiftShiftId: req.params.id
       },
@@ -416,7 +416,7 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
 
     var werkersInfoArray = [];
     x = 0;
-    for (let i = 0; i < werkers.length; i++) {
+    for (let i = 0; i < Werkers.length; i++) {
 
       let werkerInfoData = await models.user.findOne({
         attributes: [
@@ -425,23 +425,23 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
           'LastName'
         ],
         where: {
-          UserId: werkers[i].UserUserId
+          UserId: Werkers[i].UserUserId
         },
       })
       werkersInfoArray[i] = werkerInfoData;
     };
-    werkers = werkersInfoArray;
+    Werkers = werkersInfoArray;
 
     //  get the number of shifts still open
 
     // var openShifts = {};
-    let openShifts = { 'unfilledshifts' : (werkShift.NumberOfWerkers - werkers.length) };
+    let OpenShifts = { 'unfilledshifts' : (WerkShift.NumberOfWerkers - Werkers.length) };
 
-    console.log('open shifts = ' + (werkShift.NumberOfWerkers - werkers.length));
+    console.log('open shifts = ' + (WerkShift.NumberOfWerkers - Werkers.length));
 
 
 
-    res.json({ werkShift, werkers, openShifts });
+    res.json({ WerkShift, Werkers, OpenShifts });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -450,7 +450,7 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
 
 
 //  @route  GET
-//  @descr  Get a list of the Scheduler's jobs that still have open shifts
+//  @descr  Get a list of the Scheduler's jobs that have been fully staffed
 //  @access PRIVATE (TODO)
 router.get("/SchedScheduledShifts/:id", async (req, res) => {
 

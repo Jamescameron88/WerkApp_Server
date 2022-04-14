@@ -496,5 +496,53 @@ router.get("/SchedScheduledShifts/:id", async (req, res) => {
 });
 
 
+//  @route  GET
+//  @descr  Get a list of the Scheduler's Past jobs
+//  @access PRIVATE (TODO)
+router.get("/SchedPastShifts/:id", async (req, res) => {
+
+  try {
+      let shiftInfo = await models.shifts.findAll({
+        where: {
+          UserUserId: req.params.id,
+        }, 
+        raw: true,
+      });
+
+    // check each job to see if all shifts have been werked or cancelled.
+    let x = 0;
+    let SchedPastJob = [];
+    for (let i = 0; i < shiftInfo.length; i++) {
+
+      let findPastShifts = await models.usershifts.findAll({
+        where: { 
+          ShiftShiftId: shiftInfo[i].ShiftId,
+          ShiftStatus: "Werked" || "Cancelled"
+        }
+      });      
+
+      if (findPastShifts == undefined) {
+        console.log('found a null shift');
+      } else if (shiftInfo[i].NumberOfWerkers - findPastShifts.length == 0) {
+        console.log('this is a past shift');
+        SchedPastJob[x] = shiftInfo[i];
+        x = x + 1;
+      } else if (shiftInfo[i].NumberOfWerkers - findPastShifts.length > 0) {
+        console.log('this shift is still open');
+      }
+      findPastShifts = undefined;
+    };
+
+    console.log(SchedPastJob);
+
+    res.json({SchedPastJob});
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
 
 module.exports = router;

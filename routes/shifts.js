@@ -534,6 +534,7 @@ router.get("/SchedPastShifts/:id", async (req, res) => {
     };
 
     console.log(SchedPastJob);
+    console.log(SchedPastJob);
 
     res.json({SchedPastJob});
   } catch (err) {

@@ -12,6 +12,7 @@ var usersRouter = require('./routes/user');
 var associatesRouter = require('./routes/businessassociate');
 var crewRouter = require('./routes/crewandmembers');
 var shiftRouter = require('./routes/shifts');
+var notificationsRouter = require('./routes/notifications');
 
 var app = express();
 
@@ -39,6 +40,7 @@ app.use('/user', usersRouter);
 app.use('/businessassociate', associatesRouter);
 app.use('/crewandmembers', crewRouter);
 app.use('/shifts', shiftRouter);
+app.use('/notifications', notificationsRouter);
 
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');

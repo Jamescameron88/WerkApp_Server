@@ -77,7 +77,8 @@ router.get("/AvailableShifts/:id", async (req, res) => {
             ['UserUserId','SchedulerId'],
             'Company',
             'NumberOfWerkers',
-            ['DateDay','Date']
+            ['DateDay','Date'],
+            'Location'
           ],
           include: [
             {
@@ -219,7 +220,8 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
             ['UserUserId','SchedulerId'],
             'Company',
             'NumberOfWerkers',
-            ['DateDay','Date']
+            ['DateDay','Date'],
+            'Location'
           ],
           include: [
             {
@@ -271,7 +273,8 @@ router.get("/MyPastJobs/:id", async (req, res) => {
             ['UserUserId','SchedulerId'],
             'Company',
             'NumberOfWerkers',
-            ['DateDay','Date']
+            ['DateDay','Date'],
+            'Location'
           ],
           include: [
             {
@@ -422,7 +425,8 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
         attributes: [
           'UserId',
           'FirstName',
-          'LastName'
+          'LastName',
+          'ProfilePicURL'
         ],
         where: {
           UserId: Werkers[i].UserUserId

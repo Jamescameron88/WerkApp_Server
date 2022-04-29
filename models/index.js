@@ -37,12 +37,14 @@ db.Sequelize = Sequelize;
 // Mirror the /models file names
 db.user = require("./user")(sequelize, Sequelize);
 db.businessassociate = require("./businessassociate")(sequelize,Sequelize);
-// db.crewname = require("./crewname")(sequelize, Sequelize);
-// db.crewmembers = require("./crewmembers")(sequelize, Sequelize);
-// db.job = require("./job")(sequelize, Sequelize);
 db.shifts = require("./shifts")(sequelize, Sequelize);
 db.availableshifts = require("./availableshifts")(sequelize, Sequelize);
 db.usershifts = require("./usershifts")(sequelize, Sequelize);
+db.useractiongroup = require("./useractiongroup")(sequelize, Sequelize);
+db.useractiontaken = require("./useractiontaken")(sequelize, Sequelize);
+db.useractiontype = require("./useractiontype")(sequelize, Sequelize);
+db.usernotificationtable = require("./usernotificationtable")(sequelize, Sequelize);
+db.messagecontent = require("./messagecontent")(sequelize, Sequelize);
 
 
 // ============ DB Relationships ============
@@ -74,6 +76,31 @@ db.usershifts.belongsTo(db.shifts);
 //  Users to UserShifts
 db.user.hasMany(db.usershifts);
 db.usershifts.belongsTo(db.user);
+
+//  UserActionGroup to UserActionType
+db.useractiongroup.hasMany(db.useractiontype);
+db.useractiontype.belongsTo(db.useractiongroup);
+
+//  UserActionType to UserActionTaken
+db.useractiontype.hasMany(db.useractiontaken);
+db.useractiontaken.belongsTo(db.useractiontype);
+
+//  UserActionTaken to UserNotificationTable
+db.useractiontaken.hasMany(db.usernotificationtable);
+db.usernotificationtable.belongsTo(db.useractiontaken);
+
+//  UserNotificationTable to MessageContent
+db.messagecontent.belongsTo(db.usernotificationtable);
+
+//  UserActionTaken to User
+db.user.hasMany(db.useractiontaken);
+db.useractiontaken.belongsTo(db.user);  
+
+//  UserNotificationTable to User
+db.user.hasMany(db.usernotificationtable);
+db.usernotificationtable.belongsTo(db.user);
+
+
 
 
 //  Users to CrewName

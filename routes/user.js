@@ -39,7 +39,8 @@ router.post("/CreateAccount", [
         IsDeleted: 0,
         Company: req.body.newProfile.Company,
         Occupation: req.body.newProfile.Occupation,
-        ProfilePicURL: "../assets/profilePic.png"
+        ProfilePicURL: "../assets/profilePic.png",
+        UserBio: "Fill out this bio to tell others about yourself"
       }
     });
     if (created) {
@@ -219,7 +220,7 @@ router.get("/PublicProfile", async (req, res) => {
 // @access  PUBLIC (for testing)
 router.put("/PublicUpdateUserProfile/:id", async (req, res) => {
   try {
-    const { FirstName, LastName, Email, Username, Company, Occupation } = req.body.EditProfile;
+    const { FirstName, LastName, Email, Username, Company, Occupation, UserBio } = req.body.editProfile;
     
     const profileRecord = await models.user.update(
       { 
@@ -228,7 +229,8 @@ router.put("/PublicUpdateUserProfile/:id", async (req, res) => {
         Email,
         Username,
         Company,
-        Occupation
+        Occupation,
+        UserBio
       },
       { where: {
           UserId: req.params.id

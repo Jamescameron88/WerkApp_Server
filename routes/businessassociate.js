@@ -36,7 +36,7 @@ router.post("/businessAssociateTEST", async (req, res) => {
 
     var notificationObject = {
       "newNotificationRecord": {
-        "UserActionTypeId": 4,
+        "UserActionTypeId": 6,
         "UserUserId_actor": 32,
         "UserUserId_notifier": 31
       }

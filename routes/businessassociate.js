@@ -5,6 +5,7 @@ var authService = require("../services/auth");
 const { BOOLEAN } = require("sequelize");
 const { sequelize } = require("../models");
 const user = require("../models/user");
+const notificationsRoute = require("../routes/notifications");
 
 
 // everything inside the try
@@ -20,6 +21,42 @@ const user = require("../models/user");
 //           res.json("Must be logged in");
 //         }
 //     }
+
+
+router.post("/businessAssociateTEST", async (req, res) => {
+  
+  
+  
+  try {
+   
+    // var x = notificationsRoute.apiCreateNotificationRecord (req, res);
+
+    // const result = notificationsRoute.
+
+
+    var notificationObject = {
+      "newNotificationRecord": {
+        "UserActionTypeId": 4,
+        "UserUserId_actor": 32,
+        "UserUserId_notifier": 31
+      }
+    }
+
+
+    const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+    console.log(result);
+    res.json({ "message":1 });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+
+
 
 
 // @route   POST
@@ -50,7 +87,7 @@ router.post("/AssociateRelationshipStatus", async (req, res) => {
 
 
 // @route   POST
-// @descr   Send Add Associate requests
+// @descr   Send "Add Associate" requests
 // @access  PRIVATE (TODO)
 router.post("/AssociateProfile/:id", async (req, res) => {
   try {
@@ -76,6 +113,21 @@ router.post("/AssociateProfile/:id", async (req, res) => {
           RequestStatus: "RequestReceived"
         }
       });
+
+//  ****************** Setup the notification ******************
+//  1. Setup the notification object
+      var notificationObject = {
+        "newNotificationRecord": {
+          "UserActionTypeId": 1,
+          "UserUserId_actor": req.body.Self.UserId,
+          "UserUserId_notifier": req.body.ListProfile.UserId
+        }
+      };
+//  2. Call the notification function
+      const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+//  ******************  Notification Done ******************
+
+
       res.json(associates1);
     } else {
       res.json('Request already in process');
@@ -208,6 +260,27 @@ router.put("/UpdateRequest", async (req, res) => {
         b_Users_UserId: req.body.Self.UserId
       }
     });
+
+//  ****************** Setup the notification ******************
+//  1. Setup the notification object
+    
+    if(req.body.requestResponse.RequestStatus === "RequestAccepted") {
+
+    
+
+    var notificationObject = {
+      "newNotificationRecord": {
+        "UserActionTypeId": 2,
+        "UserUserId_actor": req.body.Self.UserId,
+        "UserUserId_notifier": req.body.ListProfile.UserId
+      }
+    };
+//  2. Call the notification function
+    const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+//  ******************  Notification Done ******************
+
+  }
+
     res.json('Request updated');
   } catch (err) {
     console.error(err.message);

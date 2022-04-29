@@ -11,6 +11,9 @@ module.exports = {
       Description: {
         type: Sequelize.STRING
       },
+      IsRead: {
+        type: Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

@@ -45,6 +45,9 @@ module.exports = {
       },
       ProfilePicURL: {
         type: Sequelize.STRING
+      },
+      UserBio: {
+        type: Sequelize.STRING
       }
     });
   },

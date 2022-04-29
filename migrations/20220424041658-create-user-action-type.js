@@ -11,6 +11,9 @@ module.exports = {
       Description: {
         type: Sequelize.STRING
       },
+      URLBase: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

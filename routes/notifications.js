@@ -15,29 +15,35 @@ async function apiCreateNotificationRecord(reqFx, resFx) {
 
     try {
 
-        createUserActionTaken = await models.useractiontaken.findOrCreate({
+        let createUserActionTaken = await models.useractiontaken.findOrCreate({
           where: {
             UserActionTypeId: reqFx.newNotificationRecord.UserActionTypeId,
             UserUserId: reqFx.newNotificationRecord.UserUserId_actor
           },
         });
 
-        createUserNotification = await models.usernotificationtable.findOrCreate({
+        let result = await createUserActionTaken;
+
+        let createUserNotification = await models.usernotificationtable.findOrCreate({
           where: {
             UserActionTakenId: createUserActionTaken[0].id,
             UserUserId: reqFx.newNotificationRecord.UserUserId_notifier
           },
           defaults: {
-            IsRead: FALSE
+            IsRead: 0
           }
         });
+
+        let result2 = await createUserNotification;
       
-      console.log(reqFx);
+      console.log(result);
+      console.log(createUserNotification);
 
     } catch (err) {
       console.error(err.message);
     }
 };
+
 
 
 // @route   GET

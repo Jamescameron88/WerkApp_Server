@@ -5,6 +5,24 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
+var mysql = require('mysql2');
+
+// var connection = mysql.createConnection({
+//   host: process.env.host,
+//   user: process.env.username,
+//   password: process.env.password,
+//   port: process.env.port
+// });
+
+// connection.connect(function(err) {
+//   if(err) {
+//     console.error('Database connection failed: ' + err.stack);
+//     return;
+//   }
+//   console.log('Connected to database.');
+// });
+
+
 
 // This makes the routes (A)
 var indexRouter = require('./routes/index');
@@ -67,5 +85,7 @@ app.use(function(err, req, res, next) {
 // models.sequelize.sync().then(function () {
 //   console.log("DB Sync'd up")
 // });
+
+console.log(process.env);
 
 module.exports = app;

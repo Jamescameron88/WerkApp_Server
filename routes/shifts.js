@@ -8,6 +8,7 @@ const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../models");
 const shifts = require("../models/shifts");
 const usershifts = require("../models/usershifts");
+const notificationsRoute = require("../routes/notifications");
 
 
 // @route   POST
@@ -44,7 +45,7 @@ router.post("/CreateShift", async (req, res) => {
 router.post("/PublishJob", async (req, res) => {
   try {  
   for (let i = 0; i < req.body.MyCrew.Crew.length; i++) {
-    console.log({"crew member":req.body.MyCrew.Crew[i]});
+    // console.log({"crew member":req.body.MyCrew.Crew[i]});
 
     let publishJob = await models.availableshifts.findOrCreate({
       where: {
@@ -52,8 +53,36 @@ router.post("/PublishJob", async (req, res) => {
         ShiftShiftId: req.body.MyCrew.JobJobID.id
       },
     })
+
+    console.log("My Crew", req.body.MyCrew);
+
+    let result3 = await publishJob;
+
+    // console.log(result3);
+
   }
-  res.json({schedulersAssociates});
+
+  // console.log("MultiKey : ", req.body.MyCrew.JobJobID.id);
+
+  //  ****************** Setup the notification ******************
+    //  1. Setup the notification object
+    var notificationObject = {
+      "newNotificationRecord": {
+        "UserActionTypeId": 3,
+        "UserUserId_actor": req.body.MyCrew.UserId,
+        "UserUserId_notifier": req.body.MyCrew.Crew,
+        "MultiKey": req.body.MyCrew.JobJobID.id
+      }
+    };
+    //  2. Call the notification function
+    const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+    //  ******************  Notification Done ******************
+
+
+
+
+  // res.json({schedulersAssociates});
+  res.json({"schedulersAssociates":3});
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -78,14 +107,18 @@ router.get("/AvailableShifts/:id", async (req, res) => {
             'Company',
             'NumberOfWerkers',
             ['DateDay','Date'],
-            'Location'
+            'Location',
+            'Pay',
+            'ShiftIdentifier'
           ],
           include: [
             {
               model: models.user,
               attributes: [
-                ['UserId','JJobId2']
-                ,['ProfilePicURL','SchedulerProfilePicURL']
+                ['UserId','JJobId2'],
+                ['ProfilePicURL','SchedulerProfilePicURL'],
+                'FirstName',
+                'ProfilePicURL'
               ]
             }
           ]
@@ -221,14 +254,18 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
             'Company',
             'NumberOfWerkers',
             ['DateDay','Date'],
-            'Location'
+            'Location',
+            'Pay',
+            'ShiftIdentifier'
           ],
           include: [
             {
               model: models.user,
               attributes: [
                 ['UserId','JJobId2']
-                ,['ProfilePicURL','SchedulerProfilePicURL']
+                ,['ProfilePicURL','SchedulerProfilePicURL'],
+                'FirstName',
+                'ProfilePicURL'
               ]
             }
           ]
@@ -243,6 +280,7 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
     str = str.replace(/Shift.Company/g,'Company');
     str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
     str = str.replace(/Shift.Date/g,'Date');
+    str = str.replace(/Shift.Location/g,'Location');
 
     var scheduledShifts2 = JSON.parse(str);
 
@@ -274,14 +312,18 @@ router.get("/MyPastJobs/:id", async (req, res) => {
             'Company',
             'NumberOfWerkers',
             ['DateDay','Date'],
-            'Location'
+            'Location',
+            'Pay',
+            'ShiftIdentifier'
           ],
           include: [
             {
               model: models.user,
               attributes: [
                 ['UserId','JJobId2']
-                ,['ProfilePicURL','SchedulerProfilePicURL']
+                ,['ProfilePicURL','SchedulerProfilePicURL'],
+                'FirstName',
+                'ProfilePicURL'
               ]
             }
           ]
@@ -296,6 +338,8 @@ router.get("/MyPastJobs/:id", async (req, res) => {
     str = str.replace(/Shift.Company/g,'Company');
     str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
     str = str.replace(/Shift.Date/g,'Date');
+    str = str.replace(/Shift.Location/g,'Location');
+
 
     var pastShifts2 = JSON.parse(str);
 

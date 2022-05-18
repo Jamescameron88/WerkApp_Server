@@ -107,14 +107,18 @@ router.get("/AvailableShifts/:id", async (req, res) => {
             'Company',
             'NumberOfWerkers',
             ['DateDay','Date'],
-            'Location'
+            'Location',
+            'Pay',
+            'ShiftIdentifier'
           ],
           include: [
             {
               model: models.user,
               attributes: [
-                ['UserId','JJobId2']
-                ,['ProfilePicURL','SchedulerProfilePicURL']
+                ['UserId','JJobId2'],
+                ['ProfilePicURL','SchedulerProfilePicURL'],
+                'FirstName',
+                'ProfilePicURL'
               ]
             }
           ]
@@ -250,14 +254,18 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
             'Company',
             'NumberOfWerkers',
             ['DateDay','Date'],
-            'Location'
+            'Location',
+            'Pay',
+            'ShiftIdentifier'
           ],
           include: [
             {
               model: models.user,
               attributes: [
                 ['UserId','JJobId2']
-                ,['ProfilePicURL','SchedulerProfilePicURL']
+                ,['ProfilePicURL','SchedulerProfilePicURL'],
+                'FirstName',
+                'ProfilePicURL'
               ]
             }
           ]
@@ -272,6 +280,7 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
     str = str.replace(/Shift.Company/g,'Company');
     str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
     str = str.replace(/Shift.Date/g,'Date');
+    str = str.replace(/Shift.Location/g,'Location');
 
     var scheduledShifts2 = JSON.parse(str);
 
@@ -303,14 +312,18 @@ router.get("/MyPastJobs/:id", async (req, res) => {
             'Company',
             'NumberOfWerkers',
             ['DateDay','Date'],
-            'Location'
+            'Location',
+            'Pay',
+            'ShiftIdentifier'
           ],
           include: [
             {
               model: models.user,
               attributes: [
                 ['UserId','JJobId2']
-                ,['ProfilePicURL','SchedulerProfilePicURL']
+                ,['ProfilePicURL','SchedulerProfilePicURL'],
+                'FirstName',
+                'ProfilePicURL'
               ]
             }
           ]
@@ -325,6 +338,8 @@ router.get("/MyPastJobs/:id", async (req, res) => {
     str = str.replace(/Shift.Company/g,'Company');
     str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
     str = str.replace(/Shift.Date/g,'Date');
+    str = str.replace(/Shift.Location/g,'Location');
+
 
     var pastShifts2 = JSON.parse(str);
 

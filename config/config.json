@@ -1,10 +1,9 @@
 {
   "development": {
-    "username": "admin",
-    "password": "grace_Born00",
-    "database": "werkapp-server-v1",
-    "host": "werkapp-server-v1.czp4jlccvdhe.us-east-1.rds.amazonaws.com",
-    "port": 3306,
+    "username": "root",
+    "password": "Password1!",
+    "database": "werk",
+    "host": "127.0.0.1",
     "dialect": "mysql",
     "operatorsAliases": "Op"
   },

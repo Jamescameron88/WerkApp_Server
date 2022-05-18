@@ -33,7 +33,8 @@ module.exports = (sequelize, DataTypes) => {
       Occupation: DataTypes.STRING,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
-      ProfilePicURL: DataTypes.STRING
+      ProfilePicURL: DataTypes.STRING,
+      UserBio: DataTypes.STRING
     },
     {
       sequelize,

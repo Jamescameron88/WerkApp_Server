@@ -13,31 +13,47 @@ const usershifts = require("../models/usershifts");
 //  This function is called when a Notifiable Record needs to be created
 async function apiCreateNotificationRecord(reqFx, resFx) {
 
+    console.log("MultiKey test: ", reqFx.newNotificationRecord.MultiKey);
+
+  
     try {
 
         let createUserActionTaken = await models.useractiontaken.findOrCreate({
           where: {
             UserActionTypeId: reqFx.newNotificationRecord.UserActionTypeId,
-            UserUserId: reqFx.newNotificationRecord.UserUserId_actor
+            UserUserId: reqFx.newNotificationRecord.UserUserId_actor,
+            // MultiKey: reqFx.newNotificationRecord.MultiKey
+            MultiKey: "Hello World"
           },
         });
 
         let result = await createUserActionTaken;
 
-        let createUserNotification = await models.usernotificationtable.findOrCreate({
-          where: {
-            UserActionTakenId: createUserActionTaken[0].id,
-            UserUserId: reqFx.newNotificationRecord.UserUserId_notifier
-          },
-          defaults: {
-            IsRead: 0
-          }
-        });
 
-        let result2 = await createUserNotification;
+        for (let i = 0; i < reqFx.newNotificationRecord.UserUserId_notifier.length; i ++) {
+
+          // console.log("Array Length", reqFx.newNotificationRecord.UserUserId_notifier.length);
+
+          let createUserNotification = await models.usernotificationtable.findOrCreate({
+            where: {
+              UserActionTakenId: createUserActionTaken[0].id,
+              UserUserId: reqFx.newNotificationRecord.UserUserId_notifier[i]
+            },
+            defaults: {
+              IsRead: 0
+            }
+          });
+  
+          let result2 = await createUserNotification;
+
+          // console.log("result2", result2);
+
+        }
+
+        
       
-      console.log(result);
-      console.log(createUserNotification);
+      // console.log(result);
+      // console.log(createUserNotification);
 
     } catch (err) {
       console.error(err.message);
@@ -134,7 +150,7 @@ router.post("/SendMessage", async (req, res) => {
 
       where: {
         Message: req.body.newNotificationRecord.UserMessage,
-        UserNotificationTableId: createUserNotification[0].id
+        // UserNotificationTableId: createUserNotification[0].id
       }
 
     });

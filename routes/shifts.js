@@ -8,6 +8,7 @@ const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../models");
 const shifts = require("../models/shifts");
 const usershifts = require("../models/usershifts");
+const notificationsRoute = require("../routes/notifications");
 
 
 // @route   POST
@@ -44,7 +45,7 @@ router.post("/CreateShift", async (req, res) => {
 router.post("/PublishJob", async (req, res) => {
   try {  
   for (let i = 0; i < req.body.MyCrew.Crew.length; i++) {
-    console.log({"crew member":req.body.MyCrew.Crew[i]});
+    // console.log({"crew member":req.body.MyCrew.Crew[i]});
 
     let publishJob = await models.availableshifts.findOrCreate({
       where: {
@@ -52,8 +53,36 @@ router.post("/PublishJob", async (req, res) => {
         ShiftShiftId: req.body.MyCrew.JobJobID.id
       },
     })
+
+    console.log("My Crew", req.body.MyCrew);
+
+    let result3 = await publishJob;
+
+    // console.log(result3);
+
   }
-  res.json({schedulersAssociates});
+
+  // console.log("MultiKey : ", req.body.MyCrew.JobJobID.id);
+
+  //  ****************** Setup the notification ******************
+    //  1. Setup the notification object
+    var notificationObject = {
+      "newNotificationRecord": {
+        "UserActionTypeId": 3,
+        "UserUserId_actor": req.body.MyCrew.UserId,
+        "UserUserId_notifier": req.body.MyCrew.Crew,
+        "MultiKey": req.body.MyCrew.JobJobID.id
+      }
+    };
+    //  2. Call the notification function
+    const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+    //  ******************  Notification Done ******************
+
+
+
+
+  // res.json({schedulersAssociates});
+  res.json({"schedulersAssociates":3});
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

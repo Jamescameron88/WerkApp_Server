@@ -195,6 +195,7 @@ router.get("/ShiftDetails/:id", async (req, res) => {
         { model: models.usershifts,
           attributes: [
             'IsPaid',
+            'ShiftStatus',
           ],
         },
       ],

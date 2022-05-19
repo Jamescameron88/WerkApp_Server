@@ -118,6 +118,7 @@ router.get("/AvailableShifts/:id", async (req, res) => {
                 ['UserId','JJobId2'],
                 ['ProfilePicURL','SchedulerProfilePicURL'],
                 'FirstName',
+                'LastName',
                 'ProfilePicURL'
               ]
             }
@@ -265,6 +266,7 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
                 ['UserId','JJobId2']
                 ,['ProfilePicURL','SchedulerProfilePicURL'],
                 'FirstName',
+                'LastName',
                 'ProfilePicURL'
               ]
             }
@@ -325,6 +327,7 @@ router.get("/MyPastJobs/:id", async (req, res) => {
                 ['UserId','JJobId2']
                 ,['ProfilePicURL','SchedulerProfilePicURL'],
                 'FirstName',
+                'LastName',
                 'ProfilePicURL'
               ]
             }

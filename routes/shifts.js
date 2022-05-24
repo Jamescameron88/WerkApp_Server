@@ -118,6 +118,7 @@ router.get("/AvailableShifts/:id", async (req, res) => {
                 ['UserId','JJobId2'],
                 ['ProfilePicURL','SchedulerProfilePicURL'],
                 'FirstName',
+                'LastName',
                 'ProfilePicURL'
               ]
             }
@@ -194,6 +195,7 @@ router.get("/ShiftDetails/:id", async (req, res) => {
         { model: models.usershifts,
           attributes: [
             'IsPaid',
+            'ShiftStatus',
           ],
         },
       ],
@@ -265,6 +267,7 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
                 ['UserId','JJobId2']
                 ,['ProfilePicURL','SchedulerProfilePicURL'],
                 'FirstName',
+                'LastName',
                 'ProfilePicURL'
               ]
             }
@@ -281,6 +284,8 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
     str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
     str = str.replace(/Shift.Date/g,'Date');
     str = str.replace(/Shift.Location/g,'Location');
+    str = str.replace(/Shift.Pay/g,'Pay');    
+    str = str.replace(/Shift.ShiftIdentifier/g,'ShiftIdentifier');
 
     var scheduledShifts2 = JSON.parse(str);
 
@@ -323,6 +328,7 @@ router.get("/MyPastJobs/:id", async (req, res) => {
                 ['UserId','JJobId2']
                 ,['ProfilePicURL','SchedulerProfilePicURL'],
                 'FirstName',
+                'LastName',
                 'ProfilePicURL'
               ]
             }
@@ -339,6 +345,8 @@ router.get("/MyPastJobs/:id", async (req, res) => {
     str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
     str = str.replace(/Shift.Date/g,'Date');
     str = str.replace(/Shift.Location/g,'Location');
+    str = str.replace(/Shift.Pay/g,'Pay');    
+    str = str.replace(/Shift.ShiftIdentifier/g,'ShiftIdentifier');
 
 
     var pastShifts2 = JSON.parse(str);

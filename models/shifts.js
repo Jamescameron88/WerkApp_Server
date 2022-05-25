@@ -32,7 +32,8 @@ module.exports = (sequelize, DataTypes) => {
     Company: DataTypes.STRING,
     Location: DataTypes.STRING,
     SchedulerApproval: DataTypes.BOOLEAN,
-    NumberOfWerkers: DataTypes.INTEGER
+    NumberOfWerkers: DataTypes.INTEGER,
+    ShiftCancelled: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'Shifts',

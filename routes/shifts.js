@@ -183,7 +183,7 @@ router.get("/AvailableShifts/:id", async (req, res) => {
 
 
 // @route   GET
-// @descr   Retrieve shift details
+// @descr   Retrieve shift details for a Werker
 // @access  PRIVATE (TODO)
 router.get("/ShiftDetails/:id", async (req, res) => {
   try {  
@@ -227,7 +227,8 @@ router.post("/WerkShift/", async (req, res) => {
         ShiftShiftId: req.body.werkJob.ShiftId
       },
       defaults: {
-        IsPaid: false
+        IsPaid: false,
+        ShiftStatus: Scheduled
       }
     })
     res.json({ werkShift });
@@ -470,6 +471,7 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
     });
 
     var werkersInfoArray = [];
+    var werkerShiftStatus = "Past";
     x = 0;
     for (let i = 0; i < Werkers.length; i++) {
 
@@ -485,6 +487,12 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
         },
       })
       werkersInfoArray[i] = werkerInfoData;
+      if (Werkers[i].ShiftStatus == "Werked") {
+        //  this is ok
+      } else {
+        werkerShiftStatus = "Not Past"
+      }
+
     };
     Werkers = werkersInfoArray;
 
@@ -493,11 +501,31 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
     // var openShifts = {};
     let OpenShifts = { 'unfilledshifts' : (WerkShift.NumberOfWerkers - Werkers.length) };
 
-    console.log('open shifts = ' + (WerkShift.NumberOfWerkers - Werkers.length));
 
 
+    //  Setup Shift Status =======================================================
+    //  OpenShifts.ShiftStatus = "Pass the test"
+
+    if (WerkShift.ShiftCancelled == 1) {
+      OpenShifts.ShiftStatus = "Cancelled"
+    } else if (OpenShifts.unfilledshifts > 0) {
+      OpenShifts.ShiftStatus = "Open";
+    } else if (OpenShifts.unfilledshifts == 0) {
+
+        if (werkerShiftStatus == "Past") {
+          OpenShifts.ShiftStatus = "Past";
+        } else {
+          OpenShifts.ShiftStatus = "Scheduled"
+        }
+
+    } else {
+      OpenShifts.ShiftStatus = "Houston we have a problem";
+    }
+
+    //  Finish Shift Status =======================================================
 
     res.json({ WerkShift, Werkers, OpenShifts });
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -505,7 +533,7 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
 });
 
 
-//  @route  GET
+//  @route  GET 
 //  @descr  Get a list of the Scheduler's jobs that have been fully staffed
 //  @access PRIVATE (TODO)
 router.get("/SchedScheduledShifts/:id", async (req, res) => {

@@ -228,7 +228,7 @@ router.post("/WerkShift/", async (req, res) => {
       },
       defaults: {
         IsPaid: false,
-        ShiftStatus: Scheduled
+        ShiftStatus: "Scheduled"
       }
     })
     res.json({ werkShift });
@@ -406,6 +406,8 @@ router.put("/WerkerIsPaid/", async (req, res) => {
 //  @route  GET
 //  @descr  Get a list of the Scheduler's jobs that still have open shifts
 //  @access PRIVATE (TODO)
+//  A Scheduler's Available Shifts are shifts that:
+//    1. Have not been fully staffed
 router.get("/SchedAvailableShifts/:id", async (req, res) => {
 
   try {
@@ -417,17 +419,24 @@ router.get("/SchedAvailableShifts/:id", async (req, res) => {
         raw: true,
       });
 
-    // check if there are any unfilled shifts
+    // get a list of scheduled workers
     let x = 0;
     let SchedAvailableJob = [];
     for (let i = 0; i < shiftInfo.length; i++) {
 
       let findOpenShifts = await models.usershifts.findAll({
         where: { 
-          ShiftShiftId: shiftInfo[i].ShiftId
+          ShiftShiftId: shiftInfo[i].ShiftId,
+          [Op.or]: [
+            { ShiftStatus: "Scheduled" },
+            { ShiftStatus: "Werked" }
+          ]
+          
+          // ShiftStatus: "Scheduled" || "Werked"
         }
       });      
 
+      // check if there are any unfilled shifts
       if (findOpenShifts == undefined) {
         console.log('found a null shift');
       } else if (shiftInfo[i].NumberOfWerkers - findOpenShifts.length == 0) {
@@ -536,6 +545,9 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
 //  @route  GET 
 //  @descr  Get a list of the Scheduler's jobs that have been fully staffed
 //  @access PRIVATE (TODO)
+//  A Scheduler's Scheduled Shifts are shifts that:
+//    1. Has been fully staffed
+//    2. Hasn't occurred yet (meaning ALL scheduled workers haven't marked their shift as 'Werked')
 router.get("/SchedScheduledShifts/:id", async (req, res) => {
 
   try {
@@ -554,7 +566,8 @@ router.get("/SchedScheduledShifts/:id", async (req, res) => {
 
       let findOpenShifts = await models.usershifts.findAll({
         where: { 
-          ShiftShiftId: shiftInfo[i].ShiftId
+          ShiftShiftId: shiftInfo[i].ShiftId,
+          ShiftStatus: "Scheduled"
         }
       });      
 
@@ -583,6 +596,9 @@ router.get("/SchedScheduledShifts/:id", async (req, res) => {
 //  @route  GET
 //  @descr  Get a list of the Scheduler's Past jobs
 //  @access PRIVATE (TODO)
+//  A Scheduler's Past Shifts are shifts that:
+//    1. Has been fully staffed
+//    2. Have occurred (meaning ALL scheduled workers have marked their shift as 'Werked')
 router.get("/SchedPastShifts/:id", async (req, res) => {
 
   try {
@@ -601,7 +617,7 @@ router.get("/SchedPastShifts/:id", async (req, res) => {
       let findPastShifts = await models.usershifts.findAll({
         where: { 
           ShiftShiftId: shiftInfo[i].ShiftId,
-          ShiftStatus: "Werked" || "Cancelled"
+          ShiftStatus: "Werked"
         }
       });      
 

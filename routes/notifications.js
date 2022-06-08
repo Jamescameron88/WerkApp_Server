@@ -29,10 +29,14 @@ async function apiCreateNotificationRecord(reqFx, resFx) {
 
         let result = await createUserActionTaken;
 
+        console.log("I need this to not be zero : " + reqFx.newNotificationRecord.UserUserId_notifier.length);
+        console.log("result" + result);
 
         for (let i = 0; i < reqFx.newNotificationRecord.UserUserId_notifier.length; i ++) {
 
           // console.log("Array Length", reqFx.newNotificationRecord.UserUserId_notifier.length);
+
+          console.log("made it into the notification PIECE");
 
           let createUserNotification = await models.usernotificationtable.findOrCreate({
             where: {

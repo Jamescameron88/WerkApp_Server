@@ -1,4 +1,5 @@
 var mysql = require('mysql2');
+
 var connection = mysql.createConnection({
     host:'werkapp-server-v1.czp4jlccvdhe.us-east-1.rds.amazonaws.com',
     port: '3306',

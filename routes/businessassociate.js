@@ -267,18 +267,25 @@ router.put("/UpdateRequest", async (req, res) => {
 //  ****************** Setup the notification ******************
 //  1. Setup the notification object
     
+
     if(req.body.requestResponse.RequestStatus === "RequestAccepted") {
 
-    var notificationObject = {
-      "newNotificationRecord": {
-        "UserActionTypeId": 2,
-        "UserUserId_actor": req.body.Self.UserId,
-        "UserUserId_notifier": req.body.ListProfile.UserId
-      }
-    };
-//  2. Call the notification function
-    const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
-//  ******************  Notification Done ******************
+      console.log("Made it inside the IF");
+
+
+      var notificationObject = {
+        "newNotificationRecord": {
+          "UserActionTypeId": 2,
+          "UserUserId_actor": req.body.Self.UserId,
+          "UserUserId_notifier": [req.body.ListProfile.UserId]
+        }
+      };
+
+      console.log(notificationObject);
+
+  //  2. Call the notification function
+      const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+  //  ******************  Notification Done ******************
 
   }
 

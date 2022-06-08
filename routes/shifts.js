@@ -70,7 +70,7 @@ router.post("/PublishJob", async (req, res) => {
       "newNotificationRecord": {
         "UserActionTypeId": 3,
         "UserUserId_actor": req.body.MyCrew.UserId,
-        "UserUserId_notifier": req.body.MyCrew.Crew,
+        "UserUserId_notifier": [req.body.MyCrew.Crew],
         "MultiKey": req.body.MyCrew.JobJobID.id
       }
     };
@@ -220,7 +220,7 @@ router.get("/ShiftDetails/:id", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.post("/WerkShift/", async (req, res) => {
   try {  
-    console.log(req.body);
+    console.log(req.body.werkJob);
     let werkShift = await models.usershifts.findOrCreate({
       where: {
         UserUserId: req.body.werkJob.UserId,
@@ -231,6 +231,23 @@ router.post("/WerkShift/", async (req, res) => {
         ShiftStatus: "Scheduled"
       }
     })
+
+    //  ****************** Setup the notification ******************
+    //  1. Setup the notification object
+    var notificationObject = {
+      "newNotificationRecord": {
+        "UserActionTypeId": 4,
+        "UserUserId_actor": req.body.werkJob.UserId,
+        "UserUserId_notifier": [req.body.MyCrew.Crew],
+        "MultiKey": req.body.MyCrew.JobJobID.id
+      }
+    };
+    //  2. Call the notification function
+    const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+    //  ******************  Notification Done ******************
+
+
+
     res.json({ werkShift });
   } catch (err) {
     console.error(err.message);
@@ -248,7 +265,7 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
       // attributes: [['ShiftShiftId']],
       where: {
         UserUserId: req.params.id,
-        ShiftStatus: null
+        ShiftStatus: 'Scheduled'
       }, 
       include: [
         { model: models.shifts,
@@ -431,8 +448,6 @@ router.get("/SchedAvailableShifts/:id", async (req, res) => {
             { ShiftStatus: "Scheduled" },
             { ShiftStatus: "Werked" }
           ]
-          
-          // ShiftStatus: "Scheduled" || "Werked"
         }
       });      
 

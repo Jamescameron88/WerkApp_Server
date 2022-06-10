@@ -249,6 +249,43 @@ router.post("/WerkShift/", async (req, res) => {
     //  ******************  Notification Done ******************
 
 
+    // if shift is now fulled staffed, send notification to scheduler
+    let shiftWerkersNeeded = await models.shifts.findOne({
+      where: {
+        ShiftId: req.body.werkJob.ShiftId
+      }
+    });
+    let countShiftWerkers = await models.usershifts.findAll({
+      where: {
+        ShiftShiftId: req.body.werkJob.ShiftId,
+        ShiftStatus: "Scheduled"
+      }
+    });
+
+    if (shiftWerkersNeeded.NumberOfWerkers - countShiftWerkers.length == 0) {
+      //  ****************** Setup the notification ******************
+      //  1. Setup the notification object
+      var notificationObject = {
+        "newNotificationRecord": {
+          "UserActionTypeId": 7,
+          "UserUserId_actor": req.body.werkJob.UserId,
+          "UserUserId_notifier": [req.body.werkJob.SchedID],
+          "MultiKey": req.body.werkJob.ShiftId
+        }
+      };
+      //  2. Call the notification function
+      const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+      //  ******************  Notification Done ******************
+    }
+
+
+
+
+
+
+
+
+
 
     res.json({ werkShift });
   } catch (err) {

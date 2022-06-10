@@ -22,8 +22,7 @@ async function apiCreateNotificationRecord(reqFx, resFx) {
           where: {
             UserActionTypeId: reqFx.newNotificationRecord.UserActionTypeId,
             UserUserId: reqFx.newNotificationRecord.UserUserId_actor,
-            // MultiKey: reqFx.newNotificationRecord.MultiKey
-            MultiKey: "Hello World"
+            MultiKey: reqFx.newNotificationRecord.MultiKey
           },
         });
 
@@ -82,18 +81,22 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
         { model: models.useractiontaken,
           attributes: [
             'UserActionTypeId',
-            'UserUserId'
+            'UserUserId',
+            'MultiKey'
           ],
             include: [
               { model: models.useractiontype,
               attributes: [
-                  'Description'
+                  'Description',
+                  'URLBase'
               ],
           }],
         },
       ],
       raw: true,
     })
+
+
 
     var str = JSON.stringify(listOfNotifications2);
     str = str.replace(/UserActionTaken./g,'UserActionTaken');
@@ -103,6 +106,9 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
     str = str.replace(/UserActionTakenUserActionType./g,'UserActionTakenUserActionType');
     var listOfNotifications = JSON.parse(str);
 
+
+
+
     for (let i = 0; i < listOfNotifications.length; i++) {
 
       let userInfo = await models.user.findOne({
@@ -111,10 +117,16 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
         }
       })
 
+
       listOfNotifications[i].UserActionTakenUserName = userInfo.FirstName;
       listOfNotifications[i].UserActionTakenUserProfilePicURL = userInfo.ProfilePicURL;
+      // THIS IS THE KEY/VALUE WITH THE URL + MULTIKEY
+      listOfNotifications[i].UserActionTakenAppLink = listOfNotifications[i].UserActionTakenUserActionTypeURLBase + "/" + listOfNotifications[i].UserActionTakenMultiKey;
 
     }
+
+    console.log("Look for the URLBase and MultiKey : " + JSON.stringify(listOfNotifications[0]));
+
 
     res.json({ listOfNotifications });
   } catch (err) {

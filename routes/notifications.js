@@ -13,50 +13,35 @@ const usershifts = require("../models/usershifts");
 //  This function is called when a Notifiable Record needs to be created
 async function apiCreateNotificationRecord(reqFx, resFx) {
 
-    console.log("MultiKey test: ", reqFx.newNotificationRecord.MultiKey);
+    console.log("Notifier Array : ", reqFx.newNotificationRecord.UserUserId_notifier);
 
   
     try {
 
-        let createUserActionTaken = await models.useractiontaken.findOrCreate({
-          where: {
+        let createUserActionTaken = await models.useractiontaken.create({
             UserActionTypeId: reqFx.newNotificationRecord.UserActionTypeId,
             UserUserId: reqFx.newNotificationRecord.UserUserId_actor,
             MultiKey: reqFx.newNotificationRecord.MultiKey
-          },
         });
 
         let result = await createUserActionTaken;
 
         console.log("I need this to not be zero : " + reqFx.newNotificationRecord.UserUserId_notifier.length);
-        console.log("result" + result);
 
         for (let i = 0; i < reqFx.newNotificationRecord.UserUserId_notifier.length; i ++) {
 
-          // console.log("Array Length", reqFx.newNotificationRecord.UserUserId_notifier.length);
-
           console.log("made it into the notification PIECE");
+          console.log("something wrong with id : " + JSON.stringify(createUserActionTaken));
 
-          let createUserNotification = await models.usernotificationtable.findOrCreate({
-            where: {
-              UserActionTakenId: createUserActionTaken[0].id,
-              UserUserId: reqFx.newNotificationRecord.UserUserId_notifier[i]
-            },
-            defaults: {
+          let createUserNotification = await models.usernotificationtable.create({
+              UserActionTakenId: createUserActionTaken.id,
+              UserUserId: reqFx.newNotificationRecord.UserUserId_notifier[i],
               IsRead: 0
-            }
           });
   
           let result2 = await createUserNotification;
 
-          // console.log("result2", result2);
-
         }
-
-        
-      
-      // console.log(result);
-      // console.log(createUserNotification);
 
     } catch (err) {
       console.error(err.message);

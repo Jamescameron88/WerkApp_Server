@@ -232,7 +232,7 @@ router.post("/WerkShift/", async (req, res) => {
       }
     })
 
-    console.log("Sched ID " + req.body.werkJob.SchedID);
+    console.log("Shift ID " + req.body.werkJob.ShiftId);
 
     //  ****************** Setup the notification ******************
     //  1. Setup the notification object
@@ -241,7 +241,7 @@ router.post("/WerkShift/", async (req, res) => {
         "UserActionTypeId": 4,
         "UserUserId_actor": req.body.werkJob.UserId,
         "UserUserId_notifier": [req.body.werkJob.SchedID],
-        "MultiKey": ""
+        "MultiKey": req.body.werkJob.ShiftId
       }
     };
     //  2. Call the notification function
@@ -403,7 +403,7 @@ router.put("/ShiftStatusUpdate/", async (req, res) => {
         "UserActionTypeId": 5,
         "UserUserId_actor": req.body.updateWerkerShiftStatus.UserId,
         "UserUserId_notifier": [req.body.updateWerkerShiftStatus.SchedID],
-        "MultiKey": ""
+        "MultiKey": req.body.updateWerkerShiftStatus.ShiftId
       }
     };
     //  2. Call the notification function
@@ -444,7 +444,7 @@ router.put("/WerkerIsPaid/", async (req, res) => {
           "UserActionTypeId": 6,
           "UserUserId_actor": req.body.updateWerkerShiftStatus.UserId,
           "UserUserId_notifier": [req.body.updateWerkerShiftStatus.SchedID],
-          "MultiKey": ""
+          "MultiKey": req.body.updateWerkerShiftStatus.ShiftId
         }
       };
   //  2. Call the notification function

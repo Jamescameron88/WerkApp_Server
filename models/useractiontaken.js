@@ -14,7 +14,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   UserActionTaken.init({
-    Description: DataTypes.STRING
+    Description: DataTypes.STRING,
+    MultiKey: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'UserActionTaken',

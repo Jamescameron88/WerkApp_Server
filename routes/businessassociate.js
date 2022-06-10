@@ -120,7 +120,8 @@ router.post("/AssociateProfile/:id", async (req, res) => {
         "newNotificationRecord": {
           "UserActionTypeId": 1,
           "UserUserId_actor": req.body.Self.UserId,
-          "UserUserId_notifier": [req.body.ListProfile.UserId]
+          "UserUserId_notifier": [req.body.ListProfile.UserId],
+          "MultiKey": req.body.Self.UserId
         }
       };
 
@@ -267,18 +268,26 @@ router.put("/UpdateRequest", async (req, res) => {
 //  ****************** Setup the notification ******************
 //  1. Setup the notification object
     
+
     if(req.body.requestResponse.RequestStatus === "RequestAccepted") {
 
-    var notificationObject = {
-      "newNotificationRecord": {
-        "UserActionTypeId": 2,
-        "UserUserId_actor": req.body.Self.UserId,
-        "UserUserId_notifier": req.body.ListProfile.UserId
-      }
-    };
-//  2. Call the notification function
-    const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
-//  ******************  Notification Done ******************
+      console.log("Made it inside the IF");
+
+
+      var notificationObject = {
+        "newNotificationRecord": {
+          "UserActionTypeId": 2,
+          "UserUserId_actor": req.body.Self.UserId,
+          "UserUserId_notifier": [req.body.ListProfile.UserId],
+          "MultiKey": req.body.Self.UserId
+        }
+      };
+
+      console.log(notificationObject);
+
+  //  2. Call the notification function
+      const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+  //  ******************  Notification Done ******************
 
   }
 

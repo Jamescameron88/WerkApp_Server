@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER
     },
     // ShiftId: DataTypes.INTEGER,
-    // UserUserId: DataTypes.INTEGER,
+    UserUserId: DataTypes.INTEGER,
     ShiftStatus: DataTypes.STRING,
     IsPaid: DataTypes.BOOLEAN
   }, {

@@ -278,15 +278,6 @@ router.post("/WerkShift/", async (req, res) => {
       //  ******************  Notification Done ******************
     }
 
-
-
-
-
-
-
-
-
-
     res.json({ werkShift });
   } catch (err) {
     console.error(err.message);
@@ -749,26 +740,49 @@ router.put("/SchedCancel/:id", async (req, res) => {
         ShiftId: req.params.id
       }
     });
+    const schedIDQuery = await models.shifts.findOne({
+      where: {
+        ShiftId: req.params.id
+      }
+    });
+
+    // console.log("scheduler = " + JSON.stringify(schedIDQuery));
 
     const werkersToNofify = await models.usershifts.findAll({
       where: {
         ShiftShiftId: req.params.id
       }
     });
+    let werkersToNofify2 = werkersToNofify.map(({ UserUserId }) => UserUserId);
 
-    console.log("werkers to notify : " + werkersToNofify);
+    console.log("werkers to notify : " + JSON.stringify(werkersToNofify));
 
-  //  1. Setup the notification object
-      // var notificationObject = {
-      //   "newNotificationRecord": {
-      //     "UserActionTypeId": 6,
-      //     "UserUserId_actor": req.body.updateWerkerShiftStatus.UserId,
-      //     "UserUserId_notifier": [werkersToNofify],
-      //     "MultiKey": ""
-      //   }
-      // };
+  //  SEND NOTIFICATION TO SCHEDULER AND WERKER (SEPARATELY)
+  //  SCHEDULER
+      //  1. Setup the notification object
+          var notificationObject = {
+            "newNotificationRecord": {
+              "UserActionTypeId": 9,
+              "UserUserId_actor": schedIDQuery.UserUserId,
+              "UserUserId_notifier": [schedIDQuery.UserUserId],
+              "MultiKey": req.params.id
+            }
+          };
   //  2. Call the notification function
-  // const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+  const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+
+  //  WERKER
+  //  1. Setup the notification object
+      var notificationObject2 = {
+        "newNotificationRecord": {
+          "UserActionTypeId": 8,
+          "UserUserId_actor": schedIDQuery.UserUserId,
+          "UserUserId_notifier": [werkersToNofify2],
+          "MultiKey": req.params.id
+        }
+      };
+  //  2. Call the notification function
+  const result2 = notificationsRoute.apiCreateNotificationRecord(notificationObject2,"blank");
   //  ******************  Notification Done ******************
 
 

@@ -822,5 +822,42 @@ router.put("/SchedCancel/:id", async (req, res) => {
   }
 });
 
+// @route   PUT
+// @descr   Edit user profile
+// @access  PUBLIC (for testing)
+router.put("/EditSchedShift/", async (req, res) => {
+  try {
+    const { ShiftId, ShiftIdentifier, Pay, DateDay, StartDateTime, FinishDateTime, ShiftNotes, Company, Location, NumberOfWerkers } = req.body.editShift;
+    
+    const shiftRecord = await models.shifts.update(
+      { 
+        ShiftIdentifier,
+        Pay,
+        DateDay,
+        StartDateTime,
+        FinishDateTime,
+        ShiftNotes,
+        Company,
+        Location,
+        NumberOfWerkers
+      },
+      { where: {
+          ShiftId: ShiftId
+        }
+    });
+
+    const EditSchedShift = await models.shifts.findOne({
+      where: {
+        ShiftId: ShiftId
+      }
+    });
+
+    res.json({ EditSchedShift });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 module.exports = router;

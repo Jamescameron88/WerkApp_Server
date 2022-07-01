@@ -18,29 +18,52 @@ async function apiCreateNotificationRecord(reqFx, resFx) {
   
     try {
 
+    //  *************** CREATE USER-ACTION-TAKEN RECORD *******************
         let createUserActionTaken = await models.useractiontaken.create({
             UserActionTypeId: reqFx.newNotificationRecord.UserActionTypeId,
             UserUserId: reqFx.newNotificationRecord.UserUserId_actor,
             MultiKey: reqFx.newNotificationRecord.MultiKey
         });
-
         let result = await createUserActionTaken;
+    //  **************************** FINISH *******************************
 
+
+    //  **************** CREATE USER-NOTIFICATION RECORD(S) *****************
         console.log("I need this to not be zero : " + reqFx.newNotificationRecord.UserUserId_notifier.length);
 
         for (let i = 0; i < reqFx.newNotificationRecord.UserUserId_notifier.length; i ++) {
 
           console.log("made it into the notification PIECE");
-          console.log("something wrong with id : " + JSON.stringify(createUserActionTaken));
 
-          let createUserNotification = await models.usernotificationtable.create({
+          //  ************* IF MESSAGE, THEN CREATE MESSAGE RECORD *******************
+          if (reqFx.newNotificationRecord.UserActionTypeId == 14) {
+            console.log("made it to the message posting script");
+            
+            let createUserNotification = await models.usernotificationtable.create({
+              UserActionTakenId: createUserActionTaken.id,
+              // UserUserId: reqFx.newNotificationRecord.UserUserId_notifier[i],
+              ShiftShiftId: reqFx.newNotificationRecord.UserUserId_notifier[i],
+              IsRead: 0
+            });
+            
+            let result2 = await createUserNotification;
+
+            let createMessageRecord = await models.messagecontent.create({
+                Message: reqFx.newNotificationRecord.UserMessage,
+                UserNotificationTableId: createUserNotification.id
+            });
+            //  ******************* FINISH CREATE RECORD ******************************
+          } else {
+
+            //  ******************* CREATE RECORD WITHOUT MESSAGE *********************
+            console.log("NOT posting a message notification");
+            let createUserNotification = await models.usernotificationtable.create({
               UserActionTakenId: createUserActionTaken.id,
               UserUserId: reqFx.newNotificationRecord.UserUserId_notifier[i],
               IsRead: 0
-          });
-  
-          let result2 = await createUserNotification;
-
+            });
+            let result3 = await createUserNotification;
+          }
         }
 
     } catch (err) {

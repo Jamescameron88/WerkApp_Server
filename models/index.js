@@ -102,7 +102,9 @@ db.useractiontaken.belongsTo(db.user);
 db.user.hasMany(db.usernotificationtable);
 db.usernotificationtable.belongsTo(db.user);
 
-
+//  UserNotificationTable to Shifts
+db.shifts.hasMany(db.usernotificationtable);
+db.usernotificationtable.belongsTo(db.shifts);
 
 
 //  Users to CrewName

@@ -14,7 +14,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   MessageContent.init({
-    Message: DataTypes.STRING
+    Message: DataTypes.STRING,
+    UserNotificationTableId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'MessageContent',

@@ -31,6 +31,7 @@ var associatesRouter = require('./routes/businessassociate');
 var crewRouter = require('./routes/crewandmembers');
 var shiftRouter = require('./routes/shifts');
 var notificationsRouter = require('./routes/notifications');
+var messagesRouter = require('./routes/message');
 
 var app = express();
 
@@ -59,6 +60,7 @@ app.use('/businessassociate', associatesRouter);
 app.use('/crewandmembers', crewRouter);
 app.use('/shifts', shiftRouter);
 app.use('/notifications', notificationsRouter);
+app.use('/message', messagesRouter);
 
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -86,6 +88,6 @@ app.use(function(err, req, res, next) {
 //   console.log("DB Sync'd up")
 // });
 
-console.log(process.env);
+// console.log(process.env);
 
 module.exports = app;

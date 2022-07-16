@@ -3,7 +3,6 @@ var router = express.Router();
 const { check, validationResult } = require('express-validator');
 var models = require("../models");
 var authService = require("../services/auth");
-// const { BOOLEAN } = require("sequelize");
 const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../models");
 const shifts = require("../models/shifts");
@@ -53,10 +52,7 @@ router.post("/PublishJob", async (req, res) => {
       },
     })
 
-    console.log("My Crew", req.body.MyCrew);
-
     let result3 = await publishJob;
-
   }
 
 
@@ -74,10 +70,6 @@ router.post("/PublishJob", async (req, res) => {
     const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
     //  ******************  Notification Done ******************
 
-
-
-
-  // res.json({schedulersAssociates});
   res.json({"schedulersAssociates":3});
   } catch (err) {
     console.error(err.message);
@@ -121,8 +113,10 @@ router.get("/AvailableShifts/:id", async (req, res) => {
           ]
         },
       ],
-      raw: true,
+      // plain: true,
     });
+
+    console.log(availableShifts[0].dataValues.JJobId);
 
     // check if the werker has already taken a job
     let x = 0;
@@ -146,30 +140,46 @@ router.get("/AvailableShifts/:id", async (req, res) => {
       // console.log(findMeInAShift);
     };
 
-    var str = JSON.stringify(newAvailableShifts);
-    str = str.replace(/Shift.User./g,'');
-    str = str.replace(/Shift./g,'');
-    var newAvailableShiftsA = JSON.parse(str);
+    // res.json({newAvailableShifts});
+
+    // var str = JSON.stringify(newAvailableShifts);
+    // str = str.replace(/Shift.User./g,'');
+    // str = str.replace(/Shift./g,'');
+    // var newAvailableShiftsA = JSON.parse(str);
 
     // check if there are any spots left on a shift
     let y = 0;
     let availableShifts2 = [];
-    for (let i = 0; i < newAvailableShiftsA.length; i++) {
+    for (let i = 0; i < newAvailableShifts.length; i++) {
       let countShiftWerkers = await models.usershifts.findAll({
         where: {
-          ShiftShiftId: newAvailableShiftsA[i].JJobId
+          ShiftShiftId: newAvailableShifts[i].JJobId
         }
       });
-      console.log(newAvailableShiftsA[i].NumberOfWerkers);
 
-
-      if (newAvailableShiftsA[i].NumberOfWerkers - countShiftWerkers.length > 0) {
-        availableShifts2[y] = newAvailableShiftsA[i];
+      if (newAvailableShifts[i].Shift.NumberOfWerkers - countShiftWerkers.length > 0) {
+        availableShifts2[y] = {
+          JJobId: newAvailableShifts[i].dataValues.JJobId, // 71
+          SchedulerId: newAvailableShifts[i].Shift.dataValues.SchedulerId,
+          Company: newAvailableShifts[i].Shift.Company,
+          NumberOfWerkers: newAvailableShifts[i].Shift.NumberOfWerkers,
+          Date: newAvailableShifts[i].Shift.dataValues.Date,
+          Location: newAvailableShifts[i].Shift.Location,
+          Pay: newAvailableShifts[i].Shift.Pay,
+          dentifier: newAvailableShifts[i].Shift.ShiftIdentifier,
+          UserId: newAvailableShifts[i].Shift.dataValues.SchedulerId, //39
+          JJobId2: newAvailableShifts[i].Shift.dataValues.SchedulerId, //39
+          SchedulerProfilePicURL: newAvailableShifts[i].Shift.User.ProfilePicURL,
+          FirstName: newAvailableShifts[i].Shift.User.FirstName,
+          LastName: newAvailableShifts[i].Shift.User.LastName,
+          ProfilePicURL: newAvailableShifts[i].Shift.User.ProfilePicURL
+        };
         y = y + 1;
-      }
-    }
+      };
+    };
     
-    res.json({availableShifts2});
+    res.json({ availableShifts2 });
+
     
   } catch (err) {
     console.error(err.message);
@@ -187,22 +197,54 @@ router.get("/ShiftDetails/:id", async (req, res) => {
       where: {
         ShiftId: req.params.id
       },
+      // include: [
+      //   { model: models.usershifts,
+      //     attributes: [
+      //       'IsPaid',
+      //       'ShiftStatus',
+      //     ],
+      //   },
+      // ],
       include: [
-        { model: models.usershifts,
+        { model: models.user,
           attributes: [
-            'IsPaid',
-            'ShiftStatus',
+            'FirstName',
+            'LastName'
           ],
         },
       ],
-      raw: true,
-    })
+      // raw: true,
+    });
 
-    var str = JSON.stringify(werkShift2);
-    str = str.replace(/UserShifts./g,'');
-    var werkShift = JSON.parse(str);
 
-    console.log(werkShift);
+    // Bring all the shift information together into single object
+    werkShift = {
+      ShiftId: werkShift2.ShiftId,
+      ShiftIdentifier: werkShift2.ShiftIdentifier,
+      POCName: werkShift2.POCName,
+      POCPhone: werkShift2.POCPhone,
+      Pay: werkShift2.Pay,
+      DateDay: werkShift2.DateDay,
+      StartDateTime: werkShift2.StartDateTime.UserUserId,
+      FinishDateTime: werkShift2.FinishDateTime,
+      ShiftNotes: werkShift2.ShiftNotes,
+      Company: werkShift2.Company,
+      Location: werkShift2.Location,
+      SchedulerApproval: werkShift2.SchedulerApproval,
+      NumberOfWerkers: werkShift2.NumberOfWerkers,
+      ShiftCancelled: werkShift2.ShiftCancelled,
+      createdAt: werkShift2.createdAt,
+      updatedAt: werkShift2.updatedAt,
+      UserUserId: werkShift2.UserUserId,
+      SchedFirstName: werkShift2.User.FirstName,
+      SchedLastName: werkShift2.User.LastName
+    };
+
+    // var str = JSON.stringify(werkShift2);
+    // str = str.replace(/UserShifts./g,'');
+    // var werkShift = JSON.parse(str);
+
+    // console.log(werkShift);
     res.json({ werkShift });
   } catch (err) {
     console.error(err.message);

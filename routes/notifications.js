@@ -72,14 +72,10 @@ async function apiCreateNotificationRecord(reqFx, resFx) {
 };
 
 
-
 // @route   GET
 // @descr   Retrieve list of Notifications
 // @access  PRIVATE (TODO)
-router.get("/ListOfNotifications/:id", async (req, res) => {
-    
-  // await apiCreateNotificationRecord (req, res);
-  
+router.get("/ListOfNotifications/:id", async (req, res) => {  
   try {  
     let listOfNotifications2 = await models.usernotificationtable.findAll({
       where: {
@@ -101,41 +97,39 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
           }],
         },
       ],
-      raw: true,
-    })
+      // raw: true,
+    });
 
-
-
-    var str = JSON.stringify(listOfNotifications2);
-    str = str.replace(/UserActionTaken./g,'UserActionTaken');
-    var listOfNotifications3 = JSON.parse(str);
-
-    var str = JSON.stringify(listOfNotifications3);
-    str = str.replace(/UserActionTakenUserActionType./g,'UserActionTakenUserActionType');
-    var listOfNotifications = JSON.parse(str);
-
-
-
-
-    for (let i = 0; i < listOfNotifications.length; i++) {
+    var listOfNotifications = [];
+    for (let i = 0; i < listOfNotifications2.length; i++) {
 
       let userInfo = await models.user.findOne({
         where: {
-          UserId: listOfNotifications[i].UserActionTakenUserUserId
+          UserId: listOfNotifications2[i].UserActionTaken.UserUserId
         }
-      })
+      });
 
-
-      listOfNotifications[i].UserActionTakenUserName = userInfo.FirstName;
-      listOfNotifications[i].UserActionTakenUserProfilePicURL = userInfo.ProfilePicURL;
-      // THIS IS THE KEY/VALUE WITH THE URL + MULTIKEY
-      listOfNotifications[i].UserActionTakenAppLink = listOfNotifications[i].UserActionTakenUserActionTypeURLBase + "/" + listOfNotifications[i].UserActionTakenMultiKey;
-
-    }
-
-    console.log("Look for the URLBase and MultiKey : " + JSON.stringify(listOfNotifications[0]));
-
-
+      // Bring all the Notifications information together into single object
+      listOfNotifications[i] = {
+        id: listOfNotifications2[i].id,
+        Description: listOfNotifications2[i].Description,
+        IsRead: listOfNotifications2[i].IsRead,
+        createdAt: listOfNotifications2[i].createdAt,
+        updatedAt: listOfNotifications2[i].updatedAt,
+        UserActionTakend: listOfNotifications2[i].UserActionTakenId,
+        UserUserId: listOfNotifications2[i].UserUserId,
+        ShiftShiftId: listOfNotifications2[i].ShiftShiftId,
+        UserActionTakenUserActionTyped: listOfNotifications2[i].UserActionTaken.UserActionTypeId,
+        UserActionTakenUserUserId: listOfNotifications2[i].UserActionTaken.UserUserId,
+        UserActionTakenMultiKey: listOfNotifications2[i].UserActionTaken.MultiKey,
+        UserActionTakenUserActionTypeid: listOfNotifications2[i].UserActionTaken.UserActionType.id,
+        UserActionTakenUserActionTypeDescription: listOfNotifications2[i].UserActionTaken.UserActionType.Description,
+        UserActionTakenUserActionTypeURLBase: listOfNotifications2[i].UserActionTaken.UserActionType.URLBase,
+        UserActionTakenUserName: userInfo.FirstName,
+        UserActionTakenUserProfilePicURL: userInfo.ProfilePicURL,
+        UserActionTakenAppLink: listOfNotifications2[i].UserActionTaken.UserActionType.URLBase + "/" + listOfNotifications2[i].UserActionTaken.MultiKey
+      };
+    };
     res.json({ listOfNotifications });
   } catch (err) {
     console.error(err.message);
@@ -144,13 +138,7 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
 });
 
 
-
-
-
-
-
 router.post("/SendMessage", async (req, res) => {
-
   try {
 
     createUserActionTaken = await models.useractiontaken.findOrCreate({

@@ -146,12 +146,13 @@ router.post("/AssociateProfile/:id", async (req, res) => {
 // @route   POST
 // @descr   Get list of associate requests RECEIVED
 // @access  PRIVATE (TODO)
+// ======================================= IS THIS ROUTE DEAD? =======================================
 router.post("/Notifications/RequestsReceived", async (req, res) => {
   try {
-    console.log("beginning of test");
-    console.log(req.body.profile.UserId);
-    console.log(req.cookies.jwt);
-    console.log("end of test");
+    // console.log("beginning of test");
+    // console.log(req.body.profile.UserId);
+    // console.log(req.cookies.jwt);
+    // console.log("end of test");
     const happyResult =  await models.businessassociate.findAll({
     where: {
       a_Users_UserId: req.body.profile.UserId,
@@ -176,6 +177,10 @@ router.post("/Notifications/RequestsReceived", async (req, res) => {
     });
     finalResultArray.push({...finalResult});
   }
+
+    console.log(finalResultArray);
+
+
 
     var str = JSON.stringify(finalResultArray);
     str = str.replace(/{"0":/g,'');
@@ -314,11 +319,13 @@ try {
     }
     });
 
-    var listOfAssociatesObj = {};
-    var listOfAssociatesArray = [];
+    console.log(listOfAssociates);
 
+    var listOfAssociatesObj = {};
+    
+    var listOfAssociates2 = [];
     for (let i = 0; i < listOfAssociates.length; i++) {
-      listOfAssociatesObj = await models.user.findAll({
+      listOfAssociatesObj = await models.user.findOne({
         where: {
           UserId: listOfAssociates[i].b_Users_UserId
         },
@@ -326,19 +333,23 @@ try {
           exclude: ['Email', 'Username', 'Password', 'IsScheduler', 'IsDeleted', 'createdAt', 'updatedAt']
         }
       });
-      listOfAssociatesArray.push({...listOfAssociatesObj});
-    }
 
+      // Bring all the Associate information together into single object
+      listOfAssociates2[i] = {
+        UserId: listOfAssociates[i].b_Users_UserId,
+        FirstName: listOfAssociatesObj.FirstName,
+        LastName: listOfAssociatesObj.LastName,
+        Company: listOfAssociatesObj.Company,
+        Occupation: listOfAssociatesObj.Occupation,
+        ProfilePicURL: listOfAssociatesObj.ProfilePicURL,
+        UserBio: listOfAssociatesObj.UserBio
+      };
 
-    var str = JSON.stringify(listOfAssociatesArray);
-    str = str.replace(/{"0":/g,'');
-    str = str.replace(/}}]/g,'}]');
-    str = str.replace(/}}/g,'}');
+    };
 
-    const listOfAssociates2 = JSON.parse(str);
+    res.json({ listOfAssociates2 });
 
-    res.json({listOfAssociates2});
-} catch (err) {
+  } catch (err) {
   console.error(err.message);
   res.status(500).send('Server Error');
 }

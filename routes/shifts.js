@@ -137,15 +137,7 @@ router.get("/AvailableShifts/:id", async (req, res) => {
         // console.log('werker has taken shift: ' + availableShifts[i].JJobId);
       }
       findMeInAShift = undefined;
-      // console.log(findMeInAShift);
     };
-
-    // res.json({newAvailableShifts});
-
-    // var str = JSON.stringify(newAvailableShifts);
-    // str = str.replace(/Shift.User./g,'');
-    // str = str.replace(/Shift./g,'');
-    // var newAvailableShiftsA = JSON.parse(str);
 
     // check if there are any spots left on a shift
     let y = 0;
@@ -159,7 +151,7 @@ router.get("/AvailableShifts/:id", async (req, res) => {
 
       if (newAvailableShifts[i].Shift.NumberOfWerkers - countShiftWerkers.length > 0) {
         availableShifts2[y] = {
-          JJobId: newAvailableShifts[i].dataValues.JJobId, // 71
+          JJobId: newAvailableShifts[i].dataValues.JJobId,
           SchedulerId: newAvailableShifts[i].Shift.dataValues.SchedulerId,
           Company: newAvailableShifts[i].Shift.Company,
           NumberOfWerkers: newAvailableShifts[i].Shift.NumberOfWerkers,
@@ -167,8 +159,8 @@ router.get("/AvailableShifts/:id", async (req, res) => {
           Location: newAvailableShifts[i].Shift.Location,
           Pay: newAvailableShifts[i].Shift.Pay,
           dentifier: newAvailableShifts[i].Shift.ShiftIdentifier,
-          UserId: newAvailableShifts[i].Shift.dataValues.SchedulerId, //39
-          JJobId2: newAvailableShifts[i].Shift.dataValues.SchedulerId, //39
+          UserId: newAvailableShifts[i].Shift.dataValues.SchedulerId,
+          JJobId2: newAvailableShifts[i].Shift.dataValues.SchedulerId,
           SchedulerProfilePicURL: newAvailableShifts[i].Shift.User.ProfilePicURL,
           FirstName: newAvailableShifts[i].Shift.User.FirstName,
           LastName: newAvailableShifts[i].Shift.User.LastName,
@@ -179,7 +171,6 @@ router.get("/AvailableShifts/:id", async (req, res) => {
     };
     
     res.json({ availableShifts2 });
-
     
   } catch (err) {
     console.error(err.message);
@@ -191,20 +182,12 @@ router.get("/AvailableShifts/:id", async (req, res) => {
 // @route   GET
 // @descr   Retrieve shift details for a Werker
 // @access  PRIVATE (TODO)
-router.get("/ShiftDetails/:id", async (req, res) => {
+router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
   try {  
     let werkShift2 = await models.shifts.findOne({
       where: {
-        ShiftId: req.params.id
+        ShiftId: req.params.shiftid
       },
-      // include: [
-      //   { model: models.usershifts,
-      //     attributes: [
-      //       'IsPaid',
-      //       'ShiftStatus',
-      //     ],
-      //   },
-      // ],
       include: [
         { model: models.user,
           attributes: [
@@ -213,9 +196,19 @@ router.get("/ShiftDetails/:id", async (req, res) => {
           ],
         },
       ],
-      // raw: true,
     });
 
+    let werkShift3 = await models.usershifts.findOne({
+      where: {
+        ShiftShiftId: req.params.shiftid,
+        UserUserId: req.params.userid
+
+      },
+      attributes: [
+        'IsPaid',
+        'ShiftStatus'
+      ]
+    });
 
     // Bring all the shift information together into single object
     werkShift = {
@@ -225,7 +218,7 @@ router.get("/ShiftDetails/:id", async (req, res) => {
       POCPhone: werkShift2.POCPhone,
       Pay: werkShift2.Pay,
       DateDay: werkShift2.DateDay,
-      StartDateTime: werkShift2.StartDateTime.UserUserId,
+      StartDateTime: werkShift2.StartDateTime,
       FinishDateTime: werkShift2.FinishDateTime,
       ShiftNotes: werkShift2.ShiftNotes,
       Company: werkShift2.Company,
@@ -237,14 +230,11 @@ router.get("/ShiftDetails/:id", async (req, res) => {
       updatedAt: werkShift2.updatedAt,
       UserUserId: werkShift2.UserUserId,
       SchedFirstName: werkShift2.User.FirstName,
-      SchedLastName: werkShift2.User.LastName
+      SchedLastName: werkShift2.User.LastName,
+      IsPaid: werkShift3.IsPaid,
+      ShiftStatus: werkShift3.ShiftStatus
     };
 
-    // var str = JSON.stringify(werkShift2);
-    // str = str.replace(/UserShifts./g,'');
-    // var werkShift = JSON.parse(str);
-
-    // console.log(werkShift);
     res.json({ werkShift });
   } catch (err) {
     console.error(err.message);

@@ -119,9 +119,6 @@ router.put("/AddRemoveShiftSlot/:shiftId/:AddRemove", async (req, res) => {
 });
 
 
-
-
-
 //  @route  GET
 //  @descr  Get a list of the jobs that are available for the logged in werker
 //  @access PRIVATE (TODO)

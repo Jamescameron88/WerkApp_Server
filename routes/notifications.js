@@ -114,7 +114,7 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
         id: listOfNotifications2[i].id,
         Description: listOfNotifications2[i].Description,
         IsRead: listOfNotifications2[i].IsRead,
-        createdAt: listOfNotifications2[i].createdAt,
+        createdAt: Number(listOfNotifications2[i].createdAt, 10),
         updatedAt: listOfNotifications2[i].updatedAt,
         UserActionTakend: listOfNotifications2[i].UserActionTakenId,
         UserUserId: listOfNotifications2[i].UserUserId,

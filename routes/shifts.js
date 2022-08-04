@@ -211,7 +211,7 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
     });
 
     // Bring all the shift information together into single object
-    werkShift = {
+    let werkShift = {
       ShiftId: werkShift2.ShiftId,
       ShiftIdentifier: werkShift2.ShiftIdentifier,
       POCName: werkShift2.POCName,
@@ -249,6 +249,8 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
 router.post("/WerkShift/", async (req, res) => {
   try {  
     console.log(req.body.werkJob);
+    
+    
     let werkShift = await models.usershifts.findOrCreate({
       where: {
         UserUserId: req.body.werkJob.UserId,
@@ -307,6 +309,57 @@ router.post("/WerkShift/", async (req, res) => {
     }
 
     res.json({ werkShift });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// @route   DELETE
+// @descr   Scheduler removers werker from shift
+// @access  PRIVATE (TODO)
+router.delete("/RemoveWerkerFromShift/:werkerId/:shiftId/:WerkerScheduler/:SchedulerId", async (req, res) => {
+  try {
+    let removeWerker = await models.usershifts.destroy({
+      where: {
+        UserUserId: req.params.werkerId,
+        ShiftShiftId: req.params.shiftId
+      }
+    });
+
+    if (req.params.WerkerScheduler == "Werker") {
+      //  If werker cancels himself, send notification to the scheduler
+      //  1. Setup the notification object
+      var notificationObject = {
+        "newNotificationRecord": {
+          "UserActionTypeId": 11,
+          "UserUserId_actor": req.params.werkerId,
+          "UserUserId_notifier": [req.params.SchedulerId],
+          "MultiKey": req.params.shiftId
+        }
+      };
+      //  2. Call the notification function
+      const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+      //  ******************  Notification Done ******************
+    } else { // WerkerScheduler == Scheduler
+      //  If scheduler cancels werker, send notification to the werker
+      //  1. Setup the notification object
+      var notificationObject = {
+        "newNotificationRecord": {
+          "UserActionTypeId": 10,
+          "UserUserId_actor": req.params.SchedulerId,
+          "UserUserId_notifier": [req.params.werkerId],
+          "MultiKey": req.params.shiftId
+        }
+      };
+      //  2. Call the notification function
+      const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+      //  ******************  Notification Done ******************
+    }
+
+    res.json({ "WerkerScheduler": req.params.WerkerScheduler });
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -604,7 +657,7 @@ router.get("/SchedAvailableShifts/:id", async (req, res) => {
 
 
 // @route   GET
-// @descr   Retrieve shift details
+// @descr   Retrieve shift details for a scheduler
 // @access  PRIVATE (TODO)
 router.get("/SchedShiftDetails/:id", async (req, res) => {
   

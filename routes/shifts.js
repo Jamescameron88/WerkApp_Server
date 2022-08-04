@@ -120,6 +120,39 @@ router.put("/AddRemoveShiftSlot/:shiftId/:AddRemove", async (req, res) => {
 
 
 //  @route  GET
+//  @descr  Get a list of the invited crew
+//  @access PRIVATE (TODO)
+router.get("/InvitedWerkers/:jobId", async (req, res) => {
+  try {
+    let invitedWerkerList1 = await models.availableshifts.findAll({
+      where: { 
+        ShiftShiftId: req.params.jobId
+      }, include: [
+        { model: models.user }
+      ]
+    });
+    
+    let x = 0;
+    let invitedWerkerList = [];
+    for (let i = 0; i < invitedWerkerList1.length; i++) {
+      invitedWerkerList[x] = {
+        UserId: invitedWerkerList1[x].User.UserId,
+        FirstName: invitedWerkerList1[x].User.FirstName,
+        LastName: invitedWerkerList1[x].User.LastName,
+        ProfilePicURL: invitedWerkerList1[x].User.ProfilePicURL
+      };
+      x = x + 1;
+    }  
+
+    res.json({ invitedWerkerList });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+//  @route  GET
 //  @descr  Get a list of the jobs that are available for the logged in werker
 //  @access PRIVATE (TODO)
 router.get("/AvailableShifts/:id", async (req, res) => {

@@ -55,7 +55,6 @@ router.post("/PublishJob", async (req, res) => {
     let result3 = await publishJob;
   }
 
-
   //  ****************** Setup the notification ******************
     //  1. Setup the notification object
     var notificationObject = {
@@ -77,6 +76,51 @@ router.post("/PublishJob", async (req, res) => {
   }
 });
   
+
+//  @route  PUT
+//  @descr  Add/Remove a shift slot
+//  @access PRIVATE (TODO)
+router.put("/AddRemoveShiftSlot/:shiftId/:AddRemove", async (req, res) => {
+  try {
+   
+    //  find the current number of slots
+    let addRemoveSlot1 = await models.shifts.findOne({
+      where: {
+        ShiftId: req.params.shiftId
+      }
+    });
+    
+    //  increment/decrement by one
+    let newShiftSlots1 = 0
+    if (req.params.AddRemove == "Add") {
+      let newShiftSlots = addRemoveSlot1.NumberOfWerkers + 1;
+      newShiftSlots1 = newShiftSlots
+    } else if (req.params.AddRemove == "Remove") {
+      let newShiftSlots = addRemoveSlot1.NumberOfWerkers - 1;
+      newShiftSlots1 = newShiftSlots
+    }
+
+    //  update the shift
+    const addRemoveSlot = await models.shifts.update(
+      { NumberOfWerkers: newShiftSlots1 },
+      { where: { ShiftId: req.params.shiftId }
+    });
+
+    //  requery the data to bring back the updated NumberOfWerkers
+    let updatedShiftDetails = await models.shifts.findOne({
+      where: { ShiftId: req.params.shiftId}
+    });
+
+    res.json({ updatedShiftDetails });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+
 
 //  @route  GET
 //  @descr  Get a list of the jobs that are available for the logged in werker

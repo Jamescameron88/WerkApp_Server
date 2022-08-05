@@ -391,7 +391,7 @@ router.post("/WerkShift/", async (req, res) => {
 
 
 // @route   DELETE
-// @descr   Scheduler removers werker from shift
+// @descr   Scheduler removes Werker OR Werker removes himself from shift
 // @access  PRIVATE (TODO)
 router.delete("/RemoveWerkerFromShift/:werkerId/:shiftId/:WerkerScheduler/:SchedulerId", async (req, res) => {
   try {
@@ -751,7 +751,10 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
     });
 
     var werkersInfoArray = [];
-    var werkerShiftStatus = "Past";
+    
+    // logic below: but for now this sets up an assumption that all werkers have "werked" the job
+    var werkerShiftStatus = "Past"; 
+    
     x = 0;
     for (let i = 0; i < Werkers.length; i++) {
 
@@ -768,24 +771,24 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
       })
       werkersInfoArray[i] = werkerInfoData;
       if (Werkers[i].ShiftStatus == "Werked") {
-        //  this is ok
+        //  this is ok; confirms each werker has "werked" the job 
       } else {
-        werkerShiftStatus = "Not Past"
+        // breaks the assumption: werker has not "werked" the job so it's not in the Past
+        werkerShiftStatus = "Not Past" 
       }
-
     };
     Werkers = werkersInfoArray;
 
     //  get the number of shifts still open
-
-    // var openShifts = {};
     let OpenShifts = { 'unfilledshifts' : (WerkShift.NumberOfWerkers - Werkers.length) };
 
 
-
-    //  Setup Shift Status =======================================================
-    //  OpenShifts.ShiftStatus = "Pass the test"
-
+    //  ============================== LOGIC to Setup Shift Status ==================================
+    //  LOGIC
+    //  1st: If everybody werked the job, then it's in the Past (established above).
+    //  2nd: If scheduler cancelled the job, then it's Cancelled.
+    //  3rd: If there's 1+ open slots, the shift is Open.
+    //  4th: If none of the above, then shift is Scheduled.
     if (WerkShift.ShiftCancelled == 1) {
       OpenShifts.ShiftStatus = "Cancelled"
     } else if (OpenShifts.unfilledshifts > 0) {
@@ -986,7 +989,7 @@ router.put("/SchedCancel/:id", async (req, res) => {
 // @access  PUBLIC (for testing)
 router.put("/EditSchedShift/", async (req, res) => {
   try {
-    const { ShiftId, ShiftIdentifier, Pay, DateDay, StartDateTime, FinishDateTime, ShiftNotes, Company, Location, NumberOfWerkers } = req.body.editShift;
+    const { ShiftId, ShiftIdentifier, Pay, DateDay, StartDateTime, FinishDateTime, ShiftNotes, Company, Location, NumberOfWerkers } = req.body.editSchedJob;
     
     const shiftRecord = await models.shifts.update(
       { 

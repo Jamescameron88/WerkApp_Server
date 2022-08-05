@@ -114,7 +114,7 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
         id: listOfNotifications2[i].id,
         Description: listOfNotifications2[i].Description,
         IsRead: listOfNotifications2[i].IsRead,
-        createdAt: listOfNotifications2[i].createdAt,
+        createdAt: Number(listOfNotifications2[i].createdAt, 10),
         updatedAt: listOfNotifications2[i].updatedAt,
         UserActionTakend: listOfNotifications2[i].UserActionTakenId,
         UserUserId: listOfNotifications2[i].UserUserId,
@@ -140,7 +140,6 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
 
 router.post("/SendMessage", async (req, res) => {
   try {
-
     createUserActionTaken = await models.useractiontaken.findOrCreate({
       where: {
         UserActionTypeId: req.body.newNotificationRecord.UserActionTypeId,
@@ -159,12 +158,10 @@ router.post("/SendMessage", async (req, res) => {
     });
 
     messageContentsObj = await models.messagecontent.findOrCreate({
-
       where: {
         Message: req.body.newNotificationRecord.UserMessage,
         // UserNotificationTableId: createUserNotification[0].id
       }
-
     });
 
     res.json({ "message":"sent" });
@@ -172,37 +169,43 @@ router.post("/SendMessage", async (req, res) => {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
-
 });
 
 
-
 router.get("/RetrieveMessages/:id", async (req, res) => {
-
   try {
-    
     messagesISent = await models.useractiontaken.findAll({
       where: {
         UserUserId: req.params.id,
         UserActionTypeId: 9
       }
-      
-
-    })
-
-    console.log(messagesISent);
+    });
 
     res.json({ "message":"received" });
-
-
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }  
-
-
-
 });
+
+
+// @route   PUT
+// @descr   Mark the notification as "Read"
+// @access  PRIVATE (TODO)
+router.put("/MarkRead/:NotificationId", async (req, res) => {
+  try {
+    const markMessageRead = await models.usernotificationtable.update(
+      { IsRead: 1 },
+      { where: { id: req.params.NotificationId }
+    });
+
+  res.json({ "message": "IsRead" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 
 //  ******************************************************************************

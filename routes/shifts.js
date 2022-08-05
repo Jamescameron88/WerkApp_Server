@@ -10,6 +10,7 @@ const usershifts = require("../models/usershifts");
 const notificationsRoute = require("../routes/notifications");
 
 
+
 // @route   POST
 // @descr   Create a job (header)
 // @access  PRIVATE (TODO)
@@ -190,20 +191,25 @@ router.get("/AvailableShifts/:id", async (req, res) => {
       // plain: true,
     });
 
-    console.log(availableShifts[0].dataValues.JJobId);
+    // console.log(availableShifts[0].dataValues.JJobId);
 
     // check if the werker has already taken a job
     let x = 0;
     let newAvailableShifts = [];
     for (let i = 0; i < availableShifts.length; i++) {
+      // console.log(availableShifts[i].JJobId);
+
       let findMeInAShift = await models.usershifts.findOne({
         where: { 
           UserUserId: req.params.id,
-          ShiftShiftId: availableShifts[i].JJobId
+          ShiftShiftId: availableShifts[i].dataValues.JJobId
         }
       });      
+
+      // console.log(availableShifts[i].dataValues.JJobId);
+
       if (findMeInAShift == undefined) {
-        // console.log('null, werker has not taken shift: ' + availableShifts[i].JJobId);
+        console.log('null, werker has not taken shift: ' + availableShifts[i].JJobId);
         newAvailableShifts[x] = availableShifts[i];
         x = x + 1;
         // console.log(x);
@@ -219,7 +225,7 @@ router.get("/AvailableShifts/:id", async (req, res) => {
     for (let i = 0; i < newAvailableShifts.length; i++) {
       let countShiftWerkers = await models.usershifts.findAll({
         where: {
-          ShiftShiftId: newAvailableShifts[i].JJobId
+          ShiftShiftId: newAvailableShifts[i].dataValues.JJobId
         }
       });
 
@@ -260,7 +266,7 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
   try {  
     let werkShift2 = await models.shifts.findOne({
       where: {
-        ShiftId: req.params.shiftid
+        ShiftId: parseInt(req.params.shiftid)
       },
       include: [
         { model: models.user,
@@ -274,15 +280,16 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
 
     let werkShift3 = await models.usershifts.findOne({
       where: {
-        ShiftShiftId: req.params.shiftid,
-        UserUserId: req.params.userid
-
+        ShiftShiftId: parseInt(req.params.shiftid),
+        UserUserId: parseInt(req.params.userid)
       },
       attributes: [
         'IsPaid',
         'ShiftStatus'
       ]
     });
+
+    console.log(parseInt(req.params.shiftid), parseInt(req.params.userid));
 
     // Bring all the shift information together into single object
     let werkShift = {
@@ -305,9 +312,11 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
       UserUserId: werkShift2.UserUserId,
       SchedFirstName: werkShift2.User.FirstName,
       SchedLastName: werkShift2.User.LastName,
-      IsPaid: werkShift3.IsPaid,
-      ShiftStatus: werkShift3.ShiftStatus
     };
+    if (werkShift3 !== null) {
+      werkShift.IsPaid = werkShift3.IsPaid;
+      werkShift.ShiftStatus = werkShift3.ShiftStatus
+    }
 
     res.json({ werkShift });
   } catch (err) {
@@ -391,7 +400,7 @@ router.post("/WerkShift/", async (req, res) => {
 
 
 // @route   DELETE
-// @descr   Scheduler removers werker from shift
+// @descr   Scheduler removes Werker OR Werker removes himself from shift
 // @access  PRIVATE (TODO)
 router.delete("/RemoveWerkerFromShift/:werkerId/:shiftId/:WerkerScheduler/:SchedulerId", async (req, res) => {
   try {
@@ -751,7 +760,10 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
     });
 
     var werkersInfoArray = [];
-    var werkerShiftStatus = "Past";
+    
+    // logic below: but for now this sets up an assumption that all werkers have "werked" the job
+    var werkerShiftStatus = "Past"; 
+    
     x = 0;
     for (let i = 0; i < Werkers.length; i++) {
 
@@ -768,24 +780,24 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
       })
       werkersInfoArray[i] = werkerInfoData;
       if (Werkers[i].ShiftStatus == "Werked") {
-        //  this is ok
+        //  this is ok; confirms each werker has "werked" the job 
       } else {
-        werkerShiftStatus = "Not Past"
+        // breaks the assumption: werker has not "werked" the job so it's not in the Past
+        werkerShiftStatus = "Not Past" 
       }
-
     };
     Werkers = werkersInfoArray;
 
     //  get the number of shifts still open
-
-    // var openShifts = {};
     let OpenShifts = { 'unfilledshifts' : (WerkShift.NumberOfWerkers - Werkers.length) };
 
 
-
-    //  Setup Shift Status =======================================================
-    //  OpenShifts.ShiftStatus = "Pass the test"
-
+    //  ============================== LOGIC to Setup Shift Status ==================================
+    //  LOGIC
+    //  1st: If everybody werked the job, then it's in the Past (established above).
+    //  2nd: If scheduler cancelled the job, then it's Cancelled.
+    //  3rd: If there's 1+ open slots, the shift is Open.
+    //  4th: If none of the above, then shift is Scheduled.
     if (WerkShift.ShiftCancelled == 1) {
       OpenShifts.ShiftStatus = "Cancelled"
     } else if (OpenShifts.unfilledshifts > 0) {
@@ -838,16 +850,27 @@ router.get("/SchedScheduledShifts/:id", async (req, res) => {
       let findOpenShifts = await models.usershifts.findAll({
         where: { 
           ShiftShiftId: shiftInfo[i].ShiftId,
-          ShiftStatus: "Scheduled"
+          [Op.or]: [
+            { ShiftStatus: "Scheduled" },
+            { ShiftStatus: "Werked" }
+          ]
+          // ShiftStatus: "Scheduled" // operator OR
         }
       });      
 
       if (findOpenShifts == undefined) {
         console.log('found a null shift');
       } else if (shiftInfo[i].NumberOfWerkers - findOpenShifts.length == 0) {
-        console.log('this is a scheduled shift');
-        SchedScheduledJob[x] = shiftInfo[i];
-        x = x + 1;
+        
+          // check for at least one werker shift marked as "scheduled"
+          let scheduledShiftSwitch = "no"
+          for (let y = 0; y < findOpenShifts.length; y++) {
+            if (findOpenShifts[y].ShiftStatus == 'Scheduled') {
+              console.log('this is a scheduled shift');
+              SchedScheduledJob[x] = shiftInfo[i];
+              x = x + 1;
+            }
+          }
       } else if (shiftInfo[i].NumberOfWerkers - findOpenShifts.length > 0) {
         console.log('this shift is still open');
       }
@@ -986,7 +1009,7 @@ router.put("/SchedCancel/:id", async (req, res) => {
 // @access  PUBLIC (for testing)
 router.put("/EditSchedShift/", async (req, res) => {
   try {
-    const { ShiftId, ShiftIdentifier, Pay, DateDay, StartDateTime, FinishDateTime, ShiftNotes, Company, Location, NumberOfWerkers } = req.body.editShift;
+    const { ShiftId, ShiftIdentifier, Pay, DateDay, StartDateTime, FinishDateTime, ShiftNotes, Company, Location, NumberOfWerkers } = req.body.editSchedJob;
     
     const shiftRecord = await models.shifts.update(
       { 

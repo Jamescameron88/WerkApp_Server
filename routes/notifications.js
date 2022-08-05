@@ -12,12 +12,7 @@ const usershifts = require("../models/usershifts");
 
 //  This function is called when a Notifiable Record needs to be created
 async function apiCreateNotificationRecord(reqFx, resFx) {
-
-    console.log("Notifier Array : ", reqFx.newNotificationRecord.UserUserId_notifier);
-
-  
     try {
-
     //  *************** CREATE USER-ACTION-TAKEN RECORD *******************
         let createUserActionTaken = await models.useractiontaken.create({
             UserActionTypeId: reqFx.newNotificationRecord.UserActionTypeId,

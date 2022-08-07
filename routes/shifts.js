@@ -520,7 +520,7 @@ router.get("/MyPastJobs/:id", async (req, res) => {
       // attributes: [['ShiftShiftId']],
       where: {
         UserUserId: req.params.id,
-        ShiftStatus: 'Werked' || 'Cancelled'
+        ShiftStatus: 'Werked' || 'Cancelled' || 'Paid'
       }, 
       include: [
         { model: models.shifts,
@@ -649,18 +649,13 @@ router.put("/ShiftStatusUpdate/", async (req, res) => {
 router.put("/WerkerIsPaid/", async (req, res) => {
   try {  
     const werkerTest = await models.usershifts.update(
-      { IsPaid: req.body.updateWerkerShiftStatus.IsPaid },
+      { IsPaid: req.body.updateWerkerShiftStatus.IsPaid,
+        ShiftStatus: "Paid"},
       { where: {
         UserUserId: req.body.updateWerkerShiftStatus.UserId,
         ShiftShiftId: req.body.updateWerkerShiftStatus.ShiftId
       }
     });
-
-    // const werkerJobId = await models.shifts.findOne({
-    //   where: {
-    //     ShiftId: req.body.updateWerkerShiftStatus.ShiftId
-    //   }
-    // });
 
   //  1. Setup the notification object
       var notificationObject = {
@@ -911,7 +906,10 @@ router.get("/SchedPastShifts/:id", async (req, res) => {
       let findPastShifts = await models.usershifts.findAll({
         where: { 
           ShiftShiftId: shiftInfo[i].ShiftId,
-          ShiftStatus: "Werked"
+          [Op.or]: [
+            { ShiftStatus: "Werked" },
+            { ShiftStatus: "Paid" }
+          ]
         }
       });      
 

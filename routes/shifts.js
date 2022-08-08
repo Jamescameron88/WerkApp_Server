@@ -752,19 +752,17 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
     });
 
     //  get the werkers that are on the shift
-    let Werkers = await models.usershifts.findAll({
+    let Werkers2 = await models.usershifts.findAll({
       where: {
         ShiftShiftId: req.params.id
       },
     });
 
-    var werkersInfoArray = [];
-    
+    var Werkers = [];
     // logic below: but for now this sets up an assumption that all werkers have "werked" the job
     var werkerShiftStatus = "Past"; 
     
-    x = 0;
-    for (let i = 0; i < Werkers.length; i++) {
+    for (let i = 0; i < Werkers2.length; i++) {
 
       let werkerInfoData = await models.user.findOne({
         attributes: [
@@ -774,10 +772,22 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
           'ProfilePicURL'
         ],
         where: {
-          UserId: Werkers[i].UserUserId
+          UserId: Werkers2[i].UserUserId
         },
-      })
-      werkersInfoArray[i] = werkerInfoData;
+      });
+      
+      werkerInfoData.dataValues.IsHePaid = Werkers2.IsPaid;
+
+      Werkers[i] = {
+        UserId: werkerInfoData.UserId,
+        FirstName: werkerInfoData.FirstName,
+        LastName: werkerInfoData.LastName,
+        ProfilePicURL: werkerInfoData.ProfilePicURL,
+        IsPaid: Werkers2[i].IsPaid 
+      }
+
+      console.log(Werkers);
+      
       if (Werkers[i].ShiftStatus == "Werked") {
         //  this is ok; confirms each werker has "werked" the job 
       } else {
@@ -785,7 +795,8 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
         werkerShiftStatus = "Not Past" 
       }
     };
-    Werkers = werkersInfoArray;
+    // var Werkers = [];
+    // Werkers = werkersInfoArray;
 
     //  get the number of shifts still open
     let OpenShifts = { 'unfilledshifts' : (WerkShift.NumberOfWerkers - Werkers.length) };

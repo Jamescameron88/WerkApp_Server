@@ -520,7 +520,11 @@ router.get("/MyPastJobs/:id", async (req, res) => {
       // attributes: [['ShiftShiftId']],
       where: {
         UserUserId: req.params.id,
-        ShiftStatus: 'Werked' || 'Cancelled' || 'Paid'
+        [Op.or]: [
+          { ShiftStatus: 'Cancelled' },
+          { ShiftStatus: 'Werked' },
+          { ShiftStatus: 'Paid' }
+        ]
       }, 
       include: [
         { model: models.shifts,

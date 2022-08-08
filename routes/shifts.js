@@ -710,7 +710,8 @@ router.get("/SchedAvailableShifts/:id", async (req, res) => {
           ShiftShiftId: shiftInfo[i].ShiftId,
           [Op.or]: [
             { ShiftStatus: "Scheduled" },
-            { ShiftStatus: "Werked" }
+            { ShiftStatus: "Werked" },
+            { ShiftStatus: "Paid" }
           ]
         }
       });      

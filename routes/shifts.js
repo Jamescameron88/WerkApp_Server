@@ -331,8 +331,6 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
 // @access  PRIVATE (TODO)
 router.post("/WerkShift/", async (req, res) => {
   try {  
-    console.log(req.body.werkJob);
-    
     
     let werkShift = await models.usershifts.findOrCreate({
       where: {
@@ -486,8 +484,126 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
           ]
         },
       ],
+      // raw: true,
+    });
+
+    // Create the array
+    var scheduledShifts2 = [];
+
+    // Loop thru the list
+    for (let i = 0; i < scheduledShifts.length; i++) {
+
+    // create/reset blank object with correct structure
+    var shiftObject = {
+      UserShiftId: 0,
+      UserUserId: 0,
+      ShiftStatus: "",
+      IsPaid: 0,
+      createdAt: "",
+      updatedAt: "",
+      ShiftShiftId: 0,
+      SchedulerId: 0,
+      Company: "",
+      NumberOfWerkers: 0,
+      Date: "",
+      Location: "",
+      Pay: "",
+      ShiftIdentifier: "",
+      UserId: 0,
+      JJobId2: 0,
+      SchedulerProfilePicURL: "",
+      FirstName: "",
+      LastName: "",
+      ProfilePicURL: ""
+    };
+      // assign the values to the object
+      var shiftObject = {
+        UserShiftId: scheduledShifts[i].UserShiftId,
+        UserUserId: scheduledShifts[i].UserUserId,
+        ShiftStatus: scheduledShifts[i].ShiftStatus,
+        IsPaid: scheduledShifts[i].IsPaid,
+        createdAt: scheduledShifts[i].createdAt,
+        updatedAt: scheduledShifts[i].updatedAt,
+        ShiftShiftId: scheduledShifts[i].ShiftShiftId,
+        SchedulerId: scheduledShifts[i].Shift.dataValues.SchedulerId,
+        Company: scheduledShifts[i].Shift.dataValues.Company,
+        NumberOfWerkers: scheduledShifts[i].Shift.dataValues.NumberOfWerkers,
+        Date: scheduledShifts[i].Shift.dataValues.Date,
+        Location: scheduledShifts[i].Shift.dataValues.Location,
+        Pay: scheduledShifts[i].Shift.dataValues.Pay,
+        ShiftIdentifier: scheduledShifts[i].Shift.ShiftIdentifier,
+        UserId: scheduledShifts[i].Shift.User.dataValues.JJobId2,
+        JJobId2: scheduledShifts[i].Shift.User.dataValues.JJobId2,
+        SchedulerProfilePicURL: scheduledShifts[i].Shift.User.dataValues.SchedulerProfilePicURL,
+        FirstName: scheduledShifts[i].Shift.User.dataValues.FirstName,
+        LastName: scheduledShifts[i].Shift.User.dataValues.LastName,
+        ProfilePicURL: scheduledShifts[i].Shift.User.dataValues.ProfilePicURL
+      }
+      // insert the object in the array
+      scheduledShifts2[i] = shiftObject;
+    };
+
+    res.json({ scheduledShifts2 });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+
+
+
+
+
+
+
+// @route   GET
+// @descr   Get list of jobs that a Werker has coming up
+// @access  PRIVATE (TODO)
+router.get("/MyScheduledJobs_OLD/:id", async (req, res) => {
+  try {  
+    let scheduledShifts = await models.usershifts.findAll({
+      // attributes: [['ShiftShiftId']],
+      where: {
+        UserUserId: req.params.id,
+        ShiftStatus: 'Scheduled'
+      }, 
+      include: [
+        { model: models.shifts,
+          attributes: [
+            ['UserUserId','SchedulerId'],
+            'Company',
+            'NumberOfWerkers',
+            ['DateDay','Date'],
+            'Location',
+            'Pay',
+            'ShiftIdentifier'
+          ],
+          include: [
+            {
+              model: models.user,
+              attributes: [
+                ['UserId','JJobId2']
+                ,['ProfilePicURL','SchedulerProfilePicURL'],
+                'FirstName',
+                'LastName',
+                'ProfilePicURL'
+              ]
+            }
+          ]
+        },
+      ],
       raw: true,
     });
+
+
+
+
+
+
+
 
     var str = JSON.stringify(scheduledShifts);
     str = str.replace(/Shift.User./g,'');

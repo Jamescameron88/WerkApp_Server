@@ -52,7 +52,6 @@ router.post("/PublishJob", async (req, res) => {
         ShiftShiftId: req.body.MyCrew.JobJobID.id
       },
     })
-
     let result3 = await publishJob;
   }
 
@@ -83,7 +82,6 @@ router.post("/PublishJob", async (req, res) => {
 //  @access PRIVATE (TODO)
 router.put("/AddRemoveShiftSlot/:shiftId/:AddRemove", async (req, res) => {
   try {
-   
     //  find the current number of slots
     let addRemoveSlot1 = await models.shifts.findOne({
       where: {
@@ -188,10 +186,7 @@ router.get("/AvailableShifts/:id", async (req, res) => {
           ]
         },
       ],
-      // plain: true,
     });
-
-    // console.log(availableShifts[0].dataValues.JJobId);
 
     // check if the werker has already taken a job
     let x = 0;
@@ -206,15 +201,12 @@ router.get("/AvailableShifts/:id", async (req, res) => {
         }
       });      
 
-      // console.log(availableShifts[i].dataValues.JJobId);
-
       if (findMeInAShift == undefined) {
         console.log('null, werker has not taken shift: ' + availableShifts[i].JJobId);
         newAvailableShifts[x] = availableShifts[i];
         x = x + 1;
-        // console.log(x);
       } else {
-        // console.log('werker has taken shift: ' + availableShifts[i].JJobId);
+        // werker has taken shift
       }
       findMeInAShift = undefined;
     };
@@ -251,7 +243,6 @@ router.get("/AvailableShifts/:id", async (req, res) => {
     };
     
     res.json({ availableShifts2 });
-    
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -288,8 +279,6 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
         'ShiftStatus'
       ]
     });
-
-    console.log(parseInt(req.params.shiftid), parseInt(req.params.userid));
 
     // Bring all the shift information together into single object
     let werkShift = {
@@ -343,8 +332,6 @@ router.post("/WerkShift/", async (req, res) => {
       }
     })
 
-    console.log("Shift ID " + req.body.werkJob.ShiftId);
-
     //  ****************** Setup the notification ******************
     //  1. Setup the notification object
     var notificationObject = {
@@ -358,7 +345,6 @@ router.post("/WerkShift/", async (req, res) => {
     //  2. Call the notification function
     const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
     //  ******************  Notification Done ******************
-
 
     // if shift is now fulled staffed, send notification to scheduler
     let shiftWerkersNeeded = await models.shifts.findOne({
@@ -440,7 +426,6 @@ router.delete("/RemoveWerkerFromShift/:werkerId/:shiftId/:WerkerScheduler/:Sched
     }
 
     res.json({ "WerkerScheduler": req.params.WerkerScheduler });
-
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -454,7 +439,6 @@ router.delete("/RemoveWerkerFromShift/:werkerId/:shiftId/:WerkerScheduler/:Sched
 router.get("/MyScheduledJobs/:id", async (req, res) => {
   try {  
     let scheduledShifts = await models.usershifts.findAll({
-      // attributes: [['ShiftShiftId']],
       where: {
         UserUserId: req.params.id,
         ShiftStatus: 'Scheduled'
@@ -659,7 +643,6 @@ router.get("/MyPastJobs/:id", async (req, res) => {
           ]
         },
       ],
-      // raw: true,
     });
 
    // Create the array
@@ -806,9 +789,7 @@ router.put("/ShiftStatusUpdate/", async (req, res) => {
       }
     });
 
-
     //  If werked, then 5, If cancelled then 10 & 11.
-
     if (req.body.updateWerkerShiftStatus.UpdateStatus == "Werked") {
       //  ****************** Setup the notification ******************
       //  1. Setup the notification object
@@ -824,36 +805,37 @@ router.put("/ShiftStatusUpdate/", async (req, res) => {
       const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
       //  ******************  Notification Done ******************
 
-    } else {
+    } 
+  //   else {
 
-      //  ****************** Setup the notification ******************
-      //  1. Setup the notification object - SCHEDULER
-      var notificationObject2 = {
-        "newNotificationRecord": {
-          "UserActionTypeId": 11,
-          "UserUserId_actor": req.body.updateWerkerShiftStatus.UserId,
-          "UserUserId_notifier": [req.body.updateWerkerShiftStatus.SchedID],
-          "MultiKey": req.body.updateWerkerShiftStatus.ShiftId
-        }
-      };
-  //  2. Call the notification function
-  const result2 = notificationsRoute.apiCreateNotificationRecord(notificationObject2,"blank");
-  //  ******************  Notification Done ******************
+  //     //  ****************** Setup the notification ******************
+  //     //  1. Setup the notification object - SCHEDULER
+  //     var notificationObject2 = {
+  //       "newNotificationRecord": {
+  //         "UserActionTypeId": 11,
+  //         "UserUserId_actor": req.body.updateWerkerShiftStatus.UserId,
+  //         "UserUserId_notifier": [req.body.updateWerkerShiftStatus.SchedID],
+  //         "MultiKey": req.body.updateWerkerShiftStatus.ShiftId
+  //       }
+  //     };
+  // //  2. Call the notification function
+  // const result2 = notificationsRoute.apiCreateNotificationRecord(notificationObject2,"blank");
+  // //  ******************  Notification Done ******************
 
-      //  ****************** Setup the notification ******************
-      //  1. Setup the notification object - WERKER
-      var notificationObject3 = {
-        "newNotificationRecord": {
-          "UserActionTypeId": 10,
-          "UserUserId_actor": req.body.updateWerkerShiftStatus.UserId,
-          "UserUserId_notifier": [req.body.updateWerkerShiftStatus.UserId],
-          "MultiKey": req.body.updateWerkerShiftStatus.ShiftId
-        }
-      };
-  //  2. Call the notification function
-  const result3 = notificationsRoute.apiCreateNotificationRecord(notificationObject3,"blank");
-  //  ******************  Notification Done *****************
-    }
+  //     //  ****************** Setup the notification ******************
+  //     //  1. Setup the notification object - WERKER
+  //     var notificationObject3 = {
+  //       "newNotificationRecord": {
+  //         "UserActionTypeId": 10,
+  //         "UserUserId_actor": req.body.updateWerkerShiftStatus.UserId,
+  //         "UserUserId_notifier": [req.body.updateWerkerShiftStatus.UserId],
+  //         "MultiKey": req.body.updateWerkerShiftStatus.ShiftId
+  //       }
+  //     };
+  // //  2. Call the notification function
+  // const result3 = notificationsRoute.apiCreateNotificationRecord(notificationObject3,"blank");
+  // //  ******************  Notification Done *****************
+  //   }
 
     res.json('Status updated');
   } catch (err) {
@@ -890,7 +872,6 @@ router.put("/WerkerIsPaid/", async (req, res) => {
   const result = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
   //  ******************  Notification Done ******************
 
-
     res.json('Status updated');
     // res.json({ werkerIsPaid });
   } catch (err) {
@@ -912,7 +893,6 @@ router.get("/SchedAvailableShifts/:id", async (req, res) => {
         where: {
           UserUserId: req.params.id,
         }, 
-        
         raw: true,
       });
 
@@ -1002,8 +982,6 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
         ProfilePicURL: werkerInfoData.ProfilePicURL,
         IsPaid: Werkers2[i].IsPaid 
       }
-
-      console.log(Werkers);
       
       if (Werkers[i].ShiftStatus == "Werked") {
         //  this is ok; confirms each werker has "werked" the job 
@@ -1012,8 +990,6 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
         werkerShiftStatus = "Not Past" 
       }
     };
-    // var Werkers = [];
-    // Werkers = werkersInfoArray;
 
     //  get the number of shifts still open
     let OpenShifts = { 'unfilledshifts' : (WerkShift.NumberOfWerkers - Werkers.length) };
@@ -1036,15 +1012,12 @@ router.get("/SchedShiftDetails/:id", async (req, res) => {
         } else {
           OpenShifts.ShiftStatus = "Scheduled"
         }
-
     } else {
       OpenShifts.ShiftStatus = "Houston we have a problem";
     }
-
-    //  Finish Shift Status =======================================================
+    //  ========================= Finished Setting Up Shift Status ======================================
 
     res.json({ WerkShift, Werkers, OpenShifts });
-
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -1065,7 +1038,6 @@ router.get("/SchedScheduledShifts/:id", async (req, res) => {
         where: {
           UserUserId: req.params.id,
         }, 
-        
         raw: true,
       });
 
@@ -1081,7 +1053,6 @@ router.get("/SchedScheduledShifts/:id", async (req, res) => {
             { ShiftStatus: "Scheduled" },
             { ShiftStatus: "Werked" }
           ]
-          // ShiftStatus: "Scheduled" // operator OR
         }
       });      
 
@@ -1103,8 +1074,6 @@ router.get("/SchedScheduledShifts/:id", async (req, res) => {
       }
       findOpenShifts = undefined;
     };
-
-    console.log(SchedScheduledJob);
 
     res.json({SchedScheduledJob});
   } catch (err) {
@@ -1157,9 +1126,6 @@ router.get("/SchedPastShifts/:id", async (req, res) => {
       findPastShifts = undefined;
     };
 
-    console.log(SchedPastJob);
-    console.log(SchedPastJob);
-
     res.json({SchedPastJob});
   } catch (err) {
     console.error(err.message);
@@ -1186,16 +1152,12 @@ router.put("/SchedCancel/:id", async (req, res) => {
       }
     });
 
-    // console.log("scheduler = " + JSON.stringify(schedIDQuery));
-
     const werkersToNofify = await models.usershifts.findAll({
       where: {
         ShiftShiftId: req.params.id
       }
     });
     let werkersToNofify2 = werkersToNofify.map(({ UserUserId }) => UserUserId);
-
-    console.log("werkers to notify : " + JSON.stringify(werkersToNofify));
 
   //  SEND NOTIFICATION TO SCHEDULER AND WERKER (SEPARATELY)
   //  SCHEDULER
@@ -1225,9 +1187,7 @@ router.put("/SchedCancel/:id", async (req, res) => {
   const result2 = notificationsRoute.apiCreateNotificationRecord(notificationObject2,"blank");
   //  ******************  Notification Done ******************
 
-
     res.json('Status updated');
-    // res.json({ werkerIsPaid });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

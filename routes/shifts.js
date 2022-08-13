@@ -484,7 +484,6 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
           ]
         },
       ],
-      // raw: true,
     });
 
     // Create the array
@@ -562,69 +561,62 @@ router.get("/MyScheduledJobs/:id", async (req, res) => {
 // @route   GET
 // @descr   Get list of jobs that a Werker has coming up
 // @access  PRIVATE (TODO)
-router.get("/MyScheduledJobs_OLD/:id", async (req, res) => {
-  try {  
-    let scheduledShifts = await models.usershifts.findAll({
-      // attributes: [['ShiftShiftId']],
-      where: {
-        UserUserId: req.params.id,
-        ShiftStatus: 'Scheduled'
-      }, 
-      include: [
-        { model: models.shifts,
-          attributes: [
-            ['UserUserId','SchedulerId'],
-            'Company',
-            'NumberOfWerkers',
-            ['DateDay','Date'],
-            'Location',
-            'Pay',
-            'ShiftIdentifier'
-          ],
-          include: [
-            {
-              model: models.user,
-              attributes: [
-                ['UserId','JJobId2']
-                ,['ProfilePicURL','SchedulerProfilePicURL'],
-                'FirstName',
-                'LastName',
-                'ProfilePicURL'
-              ]
-            }
-          ]
-        },
-      ],
-      raw: true,
-    });
+// router.get("/MyScheduledJobs_OLD/:id", async (req, res) => {
+//   try {  
+//     let scheduledShifts = await models.usershifts.findAll({
+//       // attributes: [['ShiftShiftId']],
+//       where: {
+//         UserUserId: req.params.id,
+//         ShiftStatus: 'Scheduled'
+//       }, 
+//       include: [
+//         { model: models.shifts,
+//           attributes: [
+//             ['UserUserId','SchedulerId'],
+//             'Company',
+//             'NumberOfWerkers',
+//             ['DateDay','Date'],
+//             'Location',
+//             'Pay',
+//             'ShiftIdentifier'
+//           ],
+//           include: [
+//             {
+//               model: models.user,
+//               attributes: [
+//                 ['UserId','JJobId2']
+//                 ,['ProfilePicURL','SchedulerProfilePicURL'],
+//                 'FirstName',
+//                 'LastName',
+//                 'ProfilePicURL'
+//               ]
+//             }
+//           ]
+//         },
+//       ],
+//       raw: true,
+//     });
 
+//     var str = JSON.stringify(scheduledShifts);
+//     str = str.replace(/Shift.User./g,'');
+//     str = str.replace(/Shift.SchedulerId/g,'SchedulerId');
+//     str = str.replace(/Shift.Company/g,'Company');
+//     str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
+//     str = str.replace(/Shift.Date/g,'Date');
+//     str = str.replace(/Shift.Location/g,'Location');
+//     str = str.replace(/Shift.Pay/g,'Pay');    
+//     str = str.replace(/Shift.ShiftIdentifier/g,'ShiftIdentifier');
 
+//     var scheduledShifts2 = JSON.parse(str);
 
+//     console.log(scheduledShifts2);
 
-
-
-
-
-    var str = JSON.stringify(scheduledShifts);
-    str = str.replace(/Shift.User./g,'');
-    str = str.replace(/Shift.SchedulerId/g,'SchedulerId');
-    str = str.replace(/Shift.Company/g,'Company');
-    str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
-    str = str.replace(/Shift.Date/g,'Date');
-    str = str.replace(/Shift.Location/g,'Location');
-    str = str.replace(/Shift.Pay/g,'Pay');    
-    str = str.replace(/Shift.ShiftIdentifier/g,'ShiftIdentifier');
-
-    var scheduledShifts2 = JSON.parse(str);
-
-    console.log(scheduledShifts2);
-
-    res.json({ scheduledShifts2 });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
+//     res.json({ scheduledShifts2 });
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send('Server Error');
+//   }
+// });
 
 
 // @route   GET
@@ -667,23 +659,64 @@ router.get("/MyPastJobs/:id", async (req, res) => {
           ]
         },
       ],
-      raw: true,
+      // raw: true,
     });
 
-    var str = JSON.stringify(pastShifts);
-    str = str.replace(/Shift.User./g,'');
-    str = str.replace(/Shift.SchedulerId/g,'SchedulerId');
-    str = str.replace(/Shift.Company/g,'Company');
-    str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
-    str = str.replace(/Shift.Date/g,'Date');
-    str = str.replace(/Shift.Location/g,'Location');
-    str = str.replace(/Shift.Pay/g,'Pay');    
-    str = str.replace(/Shift.ShiftIdentifier/g,'ShiftIdentifier');
+   // Create the array
+   var pastShifts2 = [];
 
+   // Loop thru the list
+   for (let i = 0; i < pastShifts.length; i++) {
 
-    var pastShifts2 = JSON.parse(str);
-
-    console.log(pastShifts2);
+   // create/reset blank object with correct structure
+   var shiftObject = {
+     UserShiftId: 0,
+     UserUserId: 0,
+     ShiftStatus: "",
+     IsPaid: 0,
+     createdAt: "",
+     updatedAt: "",
+     ShiftShiftId: 0,
+     SchedulerId: 0,
+     Company: "",
+     NumberOfWerkers: 0,
+     Date: "",
+     Location: "",
+     Pay: "",
+     ShiftIdentifier: "",
+     UserId: 0,
+     JJobId2: 0,
+     SchedulerProfilePicURL: "",
+     FirstName: "",
+     LastName: "",
+     ProfilePicURL: ""
+   };
+     // assign the values to the object
+     var shiftObject = {
+       UserShiftId: pastShifts[i].UserShiftId,
+       UserUserId: pastShifts[i].UserUserId,
+       ShiftStatus: pastShifts[i].ShiftStatus,
+       IsPaid: pastShifts[i].IsPaid,
+       createdAt: pastShifts[i].createdAt,
+       updatedAt: pastShifts[i].updatedAt,
+       ShiftShiftId: pastShifts[i].ShiftShiftId,
+       SchedulerId: pastShifts[i].Shift.dataValues.SchedulerId,
+       Company: pastShifts[i].Shift.dataValues.Company,
+       NumberOfWerkers: pastShifts[i].Shift.dataValues.NumberOfWerkers,
+       Date: pastShifts[i].Shift.dataValues.Date,
+       Location: pastShifts[i].Shift.dataValues.Location,
+       Pay: pastShifts[i].Shift.dataValues.Pay,
+       ShiftIdentifier: pastShifts[i].Shift.ShiftIdentifier,
+       UserId: pastShifts[i].Shift.User.dataValues.JJobId2,
+       JJobId2: pastShifts[i].Shift.User.dataValues.JJobId2,
+       SchedulerProfilePicURL: pastShifts[i].Shift.User.dataValues.SchedulerProfilePicURL,
+       FirstName: pastShifts[i].Shift.User.dataValues.FirstName,
+       LastName: pastShifts[i].Shift.User.dataValues.LastName,
+       ProfilePicURL: pastShifts[i].Shift.User.dataValues.ProfilePicURL
+     }
+     // insert the object in the array
+     pastShifts2[i] = shiftObject;
+   };
 
     res.json({ pastShifts2 });
   } catch (err) {
@@ -691,6 +724,73 @@ router.get("/MyPastJobs/:id", async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+
+
+// @route   GET
+// @descr   Get list of past jobs for a Werker
+// @access  PRIVATE (TODO)
+// router.get("/MyPastJobs_OLD/:id", async (req, res) => {
+//   try {  
+//     let pastShifts = await models.usershifts.findAll({
+//       // attributes: [['ShiftShiftId']],
+//       where: {
+//         UserUserId: req.params.id,
+//         [Op.or]: [
+//           { ShiftStatus: 'Cancelled' },
+//           { ShiftStatus: 'Werked' },
+//           { ShiftStatus: 'Paid' }
+//         ]
+//       }, 
+//       include: [
+//         { model: models.shifts,
+//           attributes: [
+//             ['UserUserId','SchedulerId'],
+//             'Company',
+//             'NumberOfWerkers',
+//             ['DateDay','Date'],
+//             'Location',
+//             'Pay',
+//             'ShiftIdentifier'
+//           ],
+//           include: [
+//             {
+//               model: models.user,
+//               attributes: [
+//                 ['UserId','JJobId2']
+//                 ,['ProfilePicURL','SchedulerProfilePicURL'],
+//                 'FirstName',
+//                 'LastName',
+//                 'ProfilePicURL'
+//               ]
+//             }
+//           ]
+//         },
+//       ],
+//       raw: true,
+//     });
+
+//     var str = JSON.stringify(pastShifts);
+//     str = str.replace(/Shift.User./g,'');
+//     str = str.replace(/Shift.SchedulerId/g,'SchedulerId');
+//     str = str.replace(/Shift.Company/g,'Company');
+//     str = str.replace(/Shift.NumberOfWerkers/g,'NumberOfWerkers');
+//     str = str.replace(/Shift.Date/g,'Date');
+//     str = str.replace(/Shift.Location/g,'Location');
+//     str = str.replace(/Shift.Pay/g,'Pay');    
+//     str = str.replace(/Shift.ShiftIdentifier/g,'ShiftIdentifier');
+
+
+//     var pastShifts2 = JSON.parse(str);
+
+//     console.log(pastShifts2);
+
+//     res.json({ pastShifts2 });
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send('Server Error');
+//   }
+// });
 
 
 // @route   PUT

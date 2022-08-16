@@ -8,7 +8,9 @@ const notificationsRoute = require("../routes/notifications");
 const { body } = require("express-validator");
 
 
-//  Test route for messages 
+// @route   POST
+// @descr   Post shift messages
+// @access  PRIVATE (TODO)
 router.post("/PostShiftMessage", async (req, res) => {
 
   try {
@@ -17,15 +19,12 @@ router.post("/PostShiftMessage", async (req, res) => {
     //  Get a list of the werkers
     const werkersToNofify = await models.usershifts.findAll({
       where: {
-        ShiftShiftId: req.body.newNotificationRecord.ShiftId
+        ShiftShiftId: req.body.newNotificationRecord.ShiftId,
+        [Op.not]: [{ ShiftStatus: "Cancelled" }]
       }
     });
     //  Bring their UserIds into an array
     let werkersToNofify2 = werkersToNofify.map(({ UserUserId }) => UserUserId);
-    
-    //  Add the Scheduler's UserId to the array
-    // werkersToNofify2.push(req.body.newNotificationRecord.SchedUserId);
-
 
     //  Remove the actor's UserId from the array
     const index = werkersToNofify2.indexOf(req.body.newNotificationRecord.UserUserId_actor);
@@ -33,13 +32,8 @@ router.post("/PostShiftMessage", async (req, res) => {
       werkersToNofify2.splice(index, 1);
     }
 
-    // console.log("werkers to notify : " + JSON.stringify(werkersToNofify));
-    // console.log("werkers to notify2 : " + werkersToNofify2);
-
-
     //  ****************** Setup the notification ******************
     //  ****************** SCHEDULER Notification ******************
-    
     // first check if the actor is the scheduler, if he is don't send a notification
         if (req.body.newNotificationRecord.UserUserId_actor == req.body.newNotificationRecord.SchedUserId) {
           console.log("don't send a notification to the scheduler because he's the actor");
@@ -64,26 +58,23 @@ router.post("/PostShiftMessage", async (req, res) => {
     //  ****************** Setup the notification ******************
     //  ****************** WERKER Notification ******************
 
-    //  1. Setup the notification object
-
-          var notificationObject = {
-            "newNotificationRecord": {
-              "UserActionTypeId": 12,
-              "UserUserId_actor": req.body.newNotificationRecord.UserUserId_actor,
-              "UserUserId_notifier": werkersToNofify2,
-              "MultiKey": req.body.newNotificationRecord.ShiftId
-            }
-          };
-          console.log("message from NotificationObject - WERKER");
-          console.log(JSON.stringify(notificationObject.newNotificationRecord));
-          //  2. Call the notification function
-          const result2 = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
-          //  ******************  Notification Done ******************
+            //  1. Setup the notification object
+            var notificationObject = {
+              "newNotificationRecord": {
+                "UserActionTypeId": 12,
+                "UserUserId_actor": req.body.newNotificationRecord.UserUserId_actor,
+                "UserUserId_notifier": werkersToNofify2,
+                "MultiKey": req.body.newNotificationRecord.ShiftId
+              }
+            };
+            
+            //  2. Call the notification function
+            const result2 = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
+    //  ******************  Notification Done ******************
 
 
     //  ****************** Setup the notification ******************
     //  **************** CONNECT SHIFT TO MESSAGE ****************** 
-
     //  1. Setup the notification object
 
         var notificationObject = {
@@ -96,19 +87,11 @@ router.post("/PostShiftMessage", async (req, res) => {
           }
         };
 
-        // console.log("message from NotificationObject");
-        // console.log(notificationObject.newNotificationRecord.UserMessage);
-
         //  2. Call the notification function
         const result3 = notificationsRoute.apiCreateNotificationRecord(notificationObject,"blank");
         //  ******************  Notification Done ******************
 
-
-
-    // console.log(req.body);
-
     res.json({ "message":1 });
-
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -132,7 +115,6 @@ router.get("/GetShiftMessages/:id", async (req, res) => {
           ],
         },
       ],
-      // raw: true,
     });
 
     var shiftMessages = [];
@@ -171,12 +153,6 @@ router.get("/GetShiftMessages/:id", async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
-
-
-
-
-
 
 
 module.exports = router;

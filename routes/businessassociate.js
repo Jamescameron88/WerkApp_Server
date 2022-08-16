@@ -147,56 +147,45 @@ router.post("/AssociateProfile/:id", async (req, res) => {
 // @descr   Get list of associate requests RECEIVED
 // @access  PRIVATE (TODO)
 // ======================================= IS THIS ROUTE DEAD? =======================================
-router.post("/Notifications/RequestsReceived", async (req, res) => {
-  try {
-    // console.log("beginning of test");
-    // console.log(req.body.profile.UserId);
-    // console.log(req.cookies.jwt);
-    // console.log("end of test");
-    const happyResult =  await models.businessassociate.findAll({
-    where: {
-      a_Users_UserId: req.body.profile.UserId,
-      RequestStatus: "RequestReceived",
-    },
-    attributes: {
-      exclude: ['BusinessAssociateId', 'RequestStatus', 'createdAt', 'updatedAt']
-    }
-  });
-    
-  var finalResult = {};
-  var finalResultArray = [];
-  
-  for (let i = 0; i < happyResult.length; i++) {
-    finalResult = await models.user.findAll({
-      where: {
-        UserId: happyResult[i].b_Users_UserId
-      },
-      attributes: {
-        exclude: ['Email', 'Username', 'Password', 'IsScheduler', 'IsDeleted', 'createdAt', 'updatedAt']
-      }
-    });
-    finalResultArray.push({...finalResult});
-  }
+// router.post("/Notifications/RequestsReceived", async (req, res) => {
+//   try {
+//     const happyResult =  await models.businessassociate.findAll({
+//     where: {
+//       a_Users_UserId: req.body.profile.UserId,
+//       RequestStatus: "RequestReceived",
+//     },
+//     attributes: {
+//       exclude: ['BusinessAssociateId', 'RequestStatus', 'createdAt', 'updatedAt']
+//     }
+//   });
+//   var finalResult = {};
+//   var finalResultArray = [];
+//   for (let i = 0; i < happyResult.length; i++) {
+//     finalResult = await models.user.findAll({
+//       where: {
+//         UserId: happyResult[i].b_Users_UserId
+//       },
+//       attributes: {
+//         exclude: ['Email', 'Username', 'Password', 'IsScheduler', 'IsDeleted', 'createdAt', 'updatedAt']
+//       }
+//     });
+//     finalResultArray.push({...finalResult});
+//   }
+//     var str = JSON.stringify(finalResultArray);
+//     str = str.replace(/{"0":/g,'');
+//     str = str.replace(/}}]/g,'}]');
+//     str = str.replace(/}}/g,'}');
+//     console.log(str);
+//     console.log(JSON.parse(str));
 
-    console.log(finalResultArray);
+//     const happyResult2 = JSON.parse(str);
 
-
-
-    var str = JSON.stringify(finalResultArray);
-    str = str.replace(/{"0":/g,'');
-    str = str.replace(/}}]/g,'}]');
-    str = str.replace(/}}/g,'}');
-    console.log(str);
-    console.log(JSON.parse(str));
-
-    const happyResult2 = JSON.parse(str);
-
-    res.json({ happyResult2 });
-  } catch (err) {
-  console.error(err.message);
-  res.status(500).send('Server Error');
-}
-});
+//     res.json({ happyResult2 });
+//   } catch (err) {
+//   console.error(err.message);
+//   res.status(500).send('Server Error');
+// }
+// });
 
 
 // @route   POST

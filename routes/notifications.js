@@ -92,7 +92,6 @@ router.get("/ListOfNotifications/:id", async (req, res) => {
           }],
         },
       ],
-      // raw: true,
     });
 
     var listOfNotifications = [];
@@ -155,7 +154,6 @@ router.post("/SendMessage", async (req, res) => {
     messageContentsObj = await models.messagecontent.findOrCreate({
       where: {
         Message: req.body.newNotificationRecord.UserMessage,
-        // UserNotificationTableId: createUserNotification[0].id
       }
     });
 

@@ -39,6 +39,65 @@ router.post("/CreateShift", async (req, res) => {
   });
   
 
+// @route   GET
+// @descr   Get list of a user's associates
+// @access  PRIVATE (TODO)
+router.get("/ShiftListOfAvailableAssociates/:schedid/:shiftid", async (req, res) => {
+  try {
+
+    //  ================================
+    //  Create a list of Scheduler's associates, 
+    //  then remove those that are already invited or already on the shift
+    //  ================================
+
+
+    // SHELL OF CODE - to be adjusted
+    // const listOfAssociates = await models.businessassociate.findAll(
+    //   {where: {
+    //     a_Users_UserId: req.params.id,
+    //     RequestStatus: "RequestAccepted"
+    //   },
+    //   attributes: {
+    //     exclude: ['BusinessAssociateId', 'RequestStatus', 'createdAt', 'updatedAt']
+    //   }
+    //   });
+  
+    //   console.log(listOfAssociates);
+  
+    //   var listOfAssociatesObj = {};
+      
+    //   var listOfAssociates2 = [];
+    //   for (let i = 0; i < listOfAssociates.length; i++) {
+    //     listOfAssociatesObj = await models.user.findOne({
+    //       where: {
+    //         UserId: listOfAssociates[i].b_Users_UserId
+    //       },
+    //       attributes: {
+    //         exclude: ['Email', 'Username', 'Password', 'IsScheduler', 'IsDeleted', 'createdAt', 'updatedAt']
+    //       }
+    //     });
+  
+        // Bring all the Associate information together into single object
+      //   listOfAssociates2[i] = {
+      //     UserId: listOfAssociates[i].b_Users_UserId,
+      //     FirstName: listOfAssociatesObj.FirstName,
+      //     LastName: listOfAssociatesObj.LastName,
+      //     Company: listOfAssociatesObj.Company,
+      //     Occupation: listOfAssociatesObj.Occupation,
+      //     ProfilePicURL: listOfAssociatesObj.ProfilePicURL,
+      //     UserBio: listOfAssociatesObj.UserBio
+      //   };
+      // };
+  
+    res.json({ listOfAssociates2 });
+    } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+  });
+
+
+
 // @route   POST
 // @descr   Publish a job (make it available) to selected associates
 // @access  PRIVATE (TODO)

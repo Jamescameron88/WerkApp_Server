@@ -63,8 +63,7 @@ app.use('/notifications', notificationsRouter);
 app.use('/message', messagesRouter);
 
 app.use(function(req, res, next) {
-  res.header('*');
-  // res.header('Access-Control-Allow-Origin', '*');  
+  res.header('Access-Control-Allow-Origin', '*');  
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });

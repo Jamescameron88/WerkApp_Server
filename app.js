@@ -38,7 +38,7 @@ var app = express();
 app.use(bodyParser.json());
 app.use(cors({
   credentials: true,
-  origin: true,
+  origin: "*",
   exposedHeaders: ["set-cookie"],
   optionsSuccessStatus: 200
 }));

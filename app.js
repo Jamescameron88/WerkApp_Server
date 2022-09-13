@@ -39,7 +39,7 @@ app.use(bodyParser.json());
 app.use(cors({
   credentials: true,
   // origin: "*",
-  origin: "main.d2z9aqs9tcnt67.amplifyapp.com",
+  origin: "werkapp-server.com",
   exposedHeaders: ["set-cookie"],
   optionsSuccessStatus: 200
 }));

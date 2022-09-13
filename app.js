@@ -39,7 +39,7 @@ app.use(bodyParser.json());
 app.use(cors({
   credentials: true,
   // origin: "*",
-  origin: "werkapp-server.com",
+  origin: "https://werkapp-server.com",
   exposedHeaders: ["set-cookie"],
   optionsSuccessStatus: 200
 }));

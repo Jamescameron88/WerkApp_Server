@@ -90,7 +90,7 @@ router.post("/Login", [
       if (authUser) {
         let token = authService.signPerson(authUser);
         res.cookie("jwt", token, {
-          httpOnly: false,
+          httpOnly: true,
           secure: true
         });
         res.json(token);

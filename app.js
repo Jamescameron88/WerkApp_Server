@@ -38,7 +38,8 @@ var app = express();
 app.use(bodyParser.json());
 app.use(cors({
   credentials: true,
-  origin: true,
+  // origin: "*",
+  origin: "https://main.d2z9aqs9tcnt67.amplifyapp.com",
   exposedHeaders: ["set-cookie"],
   optionsSuccessStatus: 200
 }));

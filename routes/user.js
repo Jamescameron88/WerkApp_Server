@@ -89,7 +89,10 @@ router.post("/Login", [
       })
       if (authUser) {
         let token = authService.signPerson(authUser);
-        res.cookie("jwt", token);
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          secure: true
+        });
         res.json(token);
       } else {
         console.log("Wrong Password");
@@ -107,21 +110,24 @@ router.post("/Login", [
 // @descr   Get the Profile data
 // @access  PRIVATE
 router.get("/Profile", async (req, res) => {
-try {
-  let token = req.cookies.jwt;
-  if (token) {
-    const authUser = await authService.verifyPerson(token); 
+  try {
+    let token = req.cookies.jwt;
+    if (token) {
+      const authUser = await authService.verifyPerson(token); 
       if (authUser) {
         const personDataFound = await models.user.findOne({
           where: {
             UserId: authUser.UserId,
           }
-          })
-          res.json({ personDataFound })
+        })
+        res.json({ personDataFound })
       } else {
         res.status(401);
         res.json("Must be logged in");
       } 
+    } else {
+      console.error("No token found")
+      res.status(500).send('No token in the cookie')
     }
   } catch (err) {
     console.error(err.message);

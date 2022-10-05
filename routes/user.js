@@ -91,6 +91,7 @@ router.post("/Login", [
         let token = authService.signPerson(authUser);
         res.cookie("jwt", token, {
           httpOnly: true,
+          path: '/',
           domain: '.werkapp-server.com',
           secure: true
         });

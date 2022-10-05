@@ -38,8 +38,7 @@ var app = express();
 app.use(bodyParser.json());
 app.use(cors({
   credentials: true,
-  // origin: "*",
-  origin: "https://main.d2z9aqs9tcnt67.amplifyapp.com",
+  origin: "https://werkapp-server.com",
   exposedHeaders: ["set-cookie"],
   optionsSuccessStatus: 200
 }));
@@ -64,7 +63,7 @@ app.use('/notifications', notificationsRouter);
 app.use('/message', messagesRouter);
 
 app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');  
+  res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });

@@ -93,6 +93,7 @@ router.post("/Login", [
           httpOnly: true,
           path: '/',
           domain: '.werkapp-server.com',
+          sameSite: true,
           secure: true
         });
         res.json(token);

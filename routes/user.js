@@ -89,12 +89,12 @@ router.post("/Login", [
       })
       if (authUser) {
         let token = authService.signPerson(authUser);
-        res.cookie("jwt", token, {
-          httpOnly: true,
-          path: '/',
-          sameSite: true,
-          secure: true
-        });
+        // res.cookie("jwt", token, {
+        //   httpOnly: true,
+        //   path: '/',
+        //   sameSite: true,
+        //   secure: true
+        // });
         res.json(token);
       } else {
         console.log("Wrong Password");

@@ -92,7 +92,6 @@ router.post("/Login", [
         res.cookie("jwt", token, {
           httpOnly: true,
           path: '/',
-          domain: '.werkapp-server.com',
           sameSite: true,
           secure: true
         });

@@ -119,7 +119,7 @@ router.post("/Login", [
 router.get("/Profile", async (req, res) => {
   try {
     let token = req.cookies.jwt;
-    console.log("tracer : " + req.cookies.jwt);
+    console.log("tracer : " + stringify(req.cookies.jwt));
     if (token) {
       const authUser = await authService.verifyPerson(token);
       if (authUser) {

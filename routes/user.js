@@ -16,14 +16,14 @@ router.post("/CreateAccount", [
   check('newProfile.LastName', 'Last Name is required').not().isEmpty(),
   check('newProfile.Email', 'Please include a valid email').isEmail(),
   check('newProfile.Password', 'Please enter a password with 2 or more characters').isLength({ min:2 })
-], async (req, res) => {    
-  
+], async (req, res) => {
+
   const errors = validationResult(req);
   console.log(req);
   if(!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
-  
+
   try {
     const [userData, created] = await models.user.findOrCreate({
       where: {
@@ -51,7 +51,7 @@ router.post("/CreateAccount", [
     }
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');    
+    res.status(500).send('Server Error');
   }
 });
 
@@ -63,13 +63,13 @@ router.post("/Login", [
   check('logProfile.Email', 'Please include a valid email').isEmail(),
   check('logProfile.Password', 'Please enter your password').not().isEmpty()
 ], async (req, res) => {
-  
+
   const errors = validationResult(req);
   // console.log(req);
   if(!errors.isEmpty()){
     return res.status(400).json({ errors: errors.array() });
   }
-  
+
   try {
     const loginUser = await models.user.findOne({
       where: {
@@ -93,7 +93,14 @@ router.post("/Login", [
           httpOnly: true,
           secure: true
         });
-        res.json(token);
+        // res.json(token);
+        // res.cookie("jwt", token, {
+        //   httpOnly: true,
+        //   path: '/',
+        //   sameSite: true,
+        //   secure: true
+        // });
+        res.json("Hello");
       } else {
         console.log("Wrong Password");
         res.json("Wrong Password")
@@ -112,8 +119,9 @@ router.post("/Login", [
 router.get("/Profile", async (req, res) => {
   try {
     let token = req.cookies.jwt;
+    console.log("tracer : " + (JSON.stringify(req.cookies.jwt)));
     if (token) {
-      const authUser = await authService.verifyPerson(token); 
+      const authUser = await authService.verifyPerson(token);
       if (authUser) {
         const personDataFound = await models.user.findOne({
           where: {
@@ -124,7 +132,7 @@ router.get("/Profile", async (req, res) => {
       } else {
         res.status(401);
         res.json("Must be logged in");
-      } 
+      }
     } else {
       console.error("No token found")
       res.status(500).send('No token in the cookie')
@@ -143,7 +151,7 @@ router.get("/Search/:id", async (req, res) => {
   try {
     let token = req.cookies.jwt;
     if (token) {
-      const authUser = await authService.verifyPerson(token); 
+      const authUser = await authService.verifyPerson(token);
       if (authUser) {
           const personArray = await models.user.findAll({
             where: {
@@ -170,7 +178,7 @@ router.get("/AssociateProfile/:id", async (req, res) => {
   try {
     let token = req.cookies.jwt;
     if (token) {
-      const authUser = await authService.verifyPerson(token); 
+      const authUser = await authService.verifyPerson(token);
       if (authUser) {
         const user = await models.user.findByPk(parseInt(req.params.id));
         res.json({ user });
@@ -213,7 +221,7 @@ router.get("/PublicProfile", async (req, res) => {
         UserId: req.body.UserId
       }
     });
-    res.json({ personDataFound }); 
+    res.json({ personDataFound });
   } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');
@@ -227,9 +235,9 @@ router.get("/PublicProfile", async (req, res) => {
 router.put("/PublicUpdateUserProfile/:id", async (req, res) => {
   try {
     const { FirstName, LastName, Email, Username, Company, Occupation, UserBio } = req.body.editProfile;
-    
+
     const profileRecord = await models.user.update(
-      { 
+      {
         FirstName,
         LastName,
         Email,

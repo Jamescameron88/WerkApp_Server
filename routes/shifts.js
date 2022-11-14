@@ -322,7 +322,8 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
         { model: models.user,
           attributes: [
             'FirstName',
-            'LastName'
+            'LastName',
+            'ProfilePicURL'
           ],
         },
       ],
@@ -360,6 +361,7 @@ router.get("/ShiftDetails/:shiftid/:userid", async (req, res) => {
       UserUserId: werkShift2.UserUserId,
       SchedFirstName: werkShift2.User.FirstName,
       SchedLastName: werkShift2.User.LastName,
+      SchedProfilePic: werkShift2.User.ProfilePicURL
     };
     if (werkShift3 !== null) {
       werkShift.IsPaid = werkShift3.IsPaid;
